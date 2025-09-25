@@ -40,10 +40,19 @@ const createUser = async (userData) => {
 const getAllUser = async () => {
   const db = await connectDB();
 
-  const userList = await db.collection("users").find();
-  return { error: false, data: resultData, errorMessage: "" };
+  const userList = await db.collection("users").find().toArray();
+  if (userList.length > 0) {
+    return {
+      error: false,
+      data: userList,
+      errorMessage: "Successfully Fetched User",
+    };
+  } else {
+    return { error: true, data: null, errorMessage: "Failed to Fetch User" };
+  }
 };
 
 module.exports = {
   createUser,
+  getAllUser,
 };

@@ -24,6 +24,24 @@ const createUser = async (bodyData) => {
   }
 };
 
+const getAllUser = async () => {
+  try {
+    const result = await userQueries.getAllUser();
+    if (result.error === false) {
+      return result;
+    }
+    return {
+      error: user.error,
+      data: user.data,
+      errorMessage: user.errorMessage,
+    };
+  } catch (error) {
+    console.error("Error Fetch All Users", error);
+    throw error;
+  }
+};
+
 module.exports = {
   createUser,
+  getAllUser,
 };

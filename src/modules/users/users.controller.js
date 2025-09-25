@@ -14,6 +14,17 @@ const createUser = async (req, res) => {
   }
 };
 
+const getAllUser = async (req, res) => {
+  try {
+    const result = await userService.getAllUser();
+    console.log(result, "Controllers");
+  } catch (error) {
+    console.log("Error Fetching All Users", error);
+    res.error(true, "Failed to Fetch All Users", 400, null);
+  }
+};
+
 module.exports = {
   createUser,
+  getAllUser,
 };
