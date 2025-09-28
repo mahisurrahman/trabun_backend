@@ -17,14 +17,93 @@ const createUser = async (req, res) => {
 const getAllUser = async (req, res) => {
   try {
     const result = await userService.getAllUser();
-    console.log(result, "Controllers");
+    return res.send(result);
   } catch (error) {
-    console.log("Error Fetching All Users", error);
-    res.error(true, "Failed to Fetch All Users", 400, null);
+    return {
+      error: true,
+      status: 500,
+      message: "User Fetch All Controller - Internal Server Error",
+      data: [],
+    };
+  }
+};
+
+const getUserInfoById = async (req, res) => {
+  try {
+    const response = await userService.getUserInfoById(req.params.id);
+    res.send(response);
+  } catch (error) {
+    return {
+      error: true,
+      status: 500,
+      message: "User Info By ID Controller - Internal Server Error",
+      data: [],
+    };
+  }
+};
+
+const removeUserById = async (req, res) => {
+  try {
+    const response = await userService.removeUserById(req.params.id);
+    res.send(response);
+  } catch (error) {
+    return {
+      error: true,
+      status: 500,
+      message: "Remove User By ID Controller - Internal Server Error",
+      data: [],
+    };
+  }
+};
+
+const getUserByType = async (req, res) => {
+  try {
+    const response = await userService.getUserByType(req.body.type);
+    res.send(response);
+  } catch (error) {
+    return {
+      error: true,
+      status: 500,
+      message: "Get User By Type Controller - Internal Server Error",
+      data: [],
+    };
+  }
+};
+
+const deleteUserById = async (req, res) => {
+  try {
+    const response = await userService.deleteByUserId(req.params.id);
+    res.send(response);
+  } catch (error) {
+    return {
+      error: true,
+      status: 500,
+      message: "Get User By Type Controller - Internal Server Error",
+      data: [],
+    };
+  }
+};
+
+const deleteAllUser = async (req, res) => {
+  try {
+    const response = await userService.deleteAllUser();
+    res.send(response);
+  } catch (error) {
+    return {
+      error: true,
+      status: 500,
+      message: "Get User By Type Controller - Internal Server Error",
+      data: [],
+    };
   }
 };
 
 module.exports = {
   createUser,
   getAllUser,
+  getUserInfoById,
+  removeUserById,
+  getUserByType,
+  deleteUserById,
+  deleteAllUser,
 };

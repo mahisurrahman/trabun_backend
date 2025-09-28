@@ -6,6 +6,7 @@ const baseSchema = {
   password: Joi.string().required(),
   traId: Joi.string().required(),
   designation: Joi.string().required(),
+  userType: Joi.number().required(),
 };
 
 const createUser = Joi.object({
@@ -14,6 +15,7 @@ const createUser = Joi.object({
   password: baseSchema.password,
   traId: baseSchema.traId,
   designation: baseSchema.designation,
+  userType: baseSchema.userType,
 });
 
 const validate =
