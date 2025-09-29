@@ -4,6 +4,7 @@ const path = require("path");
 const app = express();
 
 const userRoutes = require("./modules/users/users.routes");
+const labelRoutes = require("./modules/labels/labels.routes");
 const responseMiddleware = require("./middlewares/responseMiddleware");
 
 app.use(express.json());
@@ -19,5 +20,6 @@ app.get("/", (req, res) => {
 
 app.use(responseMiddleware);
 app.use("/api/v1/user", userRoutes);
+app.use("/api/v1/label", labelRoutes);
 
 module.exports = app;
