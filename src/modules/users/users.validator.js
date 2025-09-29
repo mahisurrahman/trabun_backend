@@ -18,6 +18,11 @@ const createUser = Joi.object({
   userType: baseSchema.userType,
 });
 
+const loginUser = Joi.object({
+  username: baseSchema.username,
+  password: baseSchema.password,
+});
+
 const validate =
   (schema, sources = ["body"]) =>
   (req, res, next) => {
@@ -39,4 +44,5 @@ const validate =
 
 module.exports = {
   createUser: validate(createUser, ["body"]),
+  loginUser: validate(loginUser, ["body"]),
 };

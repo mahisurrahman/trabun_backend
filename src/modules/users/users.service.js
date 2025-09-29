@@ -1,5 +1,7 @@
 const userQueries = require("./users.queries");
 const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
+const connectDB = require("../../config/db");
 
 const createUser = async (bodyData) => {
   const { username, email, password, traId, designation, userType } = bodyData;
@@ -22,6 +24,73 @@ const createUser = async (bodyData) => {
   } catch (error) {
     console.error("Error creating user", error);
     throw error;
+  }
+};
+
+const loginUserService = async (credentials) => {
+  try {
+    const response = await userQueries.loginUser(credentials);
+    if (response) {
+      return {
+        status: 200,
+        error: true,
+        message: "Access Token Generated",
+        data: response,
+      };
+    } else {
+      return {
+        status: 400,
+        error: true,
+        message: "Access Token Failed",
+        data: null,
+      };
+    }
+  } catch (error) {
+    console.error("Error User Login Service", error);
+    return {
+      error: true,
+      status: 500,
+      message: "User Login Service - Internal Server Error",
+      data: [],
+    };
+  }
+};
+
+const getUserInfoServc = async (id) => {
+  try {
+    const result = await userQueries.getUserInfo(id);
+    if (result === null) {
+      return {
+        status: 404,
+        error: true,
+        message: "User Not Found",
+        data: null,
+      };
+    } else {
+      const {
+        password,
+        status,
+        isActive,
+        isDelete,
+        createAt,
+        updateAt,
+        ...otherValues
+      } = result;
+      return {
+        status: 200,
+        error: false,
+        message: "User Info Fetched Successfully",
+        data: otherValues,
+      };
+    }
+  } catch (error) {
+    console.error("Get User Info Service Error", error);
+    return {
+      error: true,
+      status: 500,
+      message: "Get User Info Service Error - Internal Server Error",
+      data: [],
+    };
   }
 };
 
@@ -202,12 +271,84 @@ const deleteAllUser = async () => {
   }
 };
 
+const logoutUser = async (data) => {
+  const db = await connectDB();
+  try {
+    if (!data.headers["authorization"]) {
+      return { status: 400, error: true, data: null, message: "Unauthorized" };
+    }
+    const authHeader = data.headers["authorization"];
+    const token = authHeader && authHeader.split(" ")[1];
+
+    if (!token) {
+      return { status: 400, error: true, data: null, message: "Unauthorized" };
+    }
+
+    let user = await new Promise((resolve, reject) => {
+      jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decodedUser) => {
+        if (err) {
+          return reject(err);
+        }
+        resolve(decodedUser);
+      });
+    });
+
+    console.log(user, "User Data");
+
+    if (user.length === 0 || user === undefined || user === null) {
+      return {
+        status: 400,
+        error: true,
+        data: null,
+        message: "Unauthorized",
+      };
+    }
+
+    const userResponse = await userQueries.removeAuth(user.token);
+    if (userResponse === undefined || userResponse === null) {
+      return {
+        status: 200,
+        error: false,
+        data: null,
+        message: "User Already Logout",
+      };
+    }
+
+    if (userResponse.error) {
+      return {
+        status: 400,
+        error: true,
+        data: null,
+        message: "Unauthorized",
+      };
+    } else {
+      return {
+        status: 200,
+        error: false,
+        data: null,
+        message: "User has been logged out",
+      };
+    }
+  } catch (error) {
+    console.error("Error Logging Out User", error);
+    return {
+      error: true,
+      status: 500,
+      message: "Log out service - Internal Server Error",
+      data: [],
+    };
+  }
+};
+
 module.exports = {
   createUser,
+  loginUserService,
   getAllUser,
   getUserInfoById,
   removeUserById,
   getUserByType,
   deleteByUserId,
   deleteAllUser,
+  getUserInfoServc,
+  logoutUser,
 };

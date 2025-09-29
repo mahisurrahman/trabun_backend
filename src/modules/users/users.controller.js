@@ -14,6 +14,48 @@ const createUser = async (req, res) => {
   }
 };
 
+const loginUserContlr = async (req, res) => {
+  try {
+    const response = await userService.loginUserService(req.body);
+    res.send(response);
+  } catch (error) {
+    return {
+      error: true,
+      status: 500,
+      message: "Login User Controller - Internal Server Error",
+      data: [],
+    };
+  }
+};
+
+const logoutUserContrl = async (req, res) => {
+  try {
+    const result = await userService.logoutUser(req);
+    return res.send(result);
+  } catch (error) {
+    return {
+      error: true,
+      status: 500,
+      message: "Logout User Controller - Internal Server Error",
+      data: [],
+    };
+  }
+};
+
+const getUserInfoContrl = async (req, res) => {
+  try {
+    const response = await userService.getUserInfoServc(req.user.token);
+    res.send(response);
+  } catch (error) {
+    return {
+      error: true,
+      status: 500,
+      message: "User Info Controller - Internal Server Error",
+      data: [],
+    };
+  }
+};
+
 const getAllUser = async (req, res) => {
   try {
     const result = await userService.getAllUser();
@@ -100,10 +142,13 @@ const deleteAllUser = async (req, res) => {
 
 module.exports = {
   createUser,
+  loginUserContlr,
   getAllUser,
   getUserInfoById,
   removeUserById,
   getUserByType,
   deleteUserById,
   deleteAllUser,
+  getUserInfoContrl,
+  logoutUserContrl,
 };
