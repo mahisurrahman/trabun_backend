@@ -17,22 +17,24 @@ const createTask = async (data) => {
 
   const db = await connectDB();
 
-  const response = await db.collection("tasks").insertOne({
-    taskTitle: taskTitle,
-    taskDescription: taskDescription,
-    taskPriority: taskPriority,
-    taskAssignedTo: taskAssignedTo,
-    backlog: backlog,
-    taskCreatedBy: taskCreatedBy,
-    taskAssignedBy: taskAssignedBy,
+  const task = {
+    taskTitle,
+    taskDescription,
+    taskPriority,
+    taskAssignedTo,
+    backlog,
+    taskCreatedBy,
+    taskAssignedBy,
     taskStatus: "pending",
     createAt: new Date(),
     updateAt: null,
     isActive: true,
     isDelete: false,
     status: true,
-  });
-  return response;
+  };
+
+  const result = await db.collection("tasks").insertOne(task);
+  return { ...task, _id: result.insertedId };
 };
 
 const taskUpdate = async (taskId, updateData) => {
@@ -58,7 +60,7 @@ const softRemoveTask = async (taskId) => {
     .collection("tasks")
     .updateOne(
       { _id: new ObjectId(taskId) },
-      { $set: { isDelete: true, updateAt: new Date() } }
+      { $set: { isActive: false, isDelete: true, updateAt: new Date() } }
     );
   return response;
 };
@@ -77,7 +79,7 @@ const getTaskById = async (taskId) => {
   const db = await connectDB();
   const task = await db
     .collection("tasks")
-    .findOne({ _id: new ObjectId(taskId), isDelete: false });
+    .findOne({ _id: new ObjectId(taskId), isDelete: false, isActive: true });
   return task;
 };
 
@@ -86,7 +88,7 @@ const getAllTasks = async () => {
   const db = await connectDB();
   const tasks = await db
     .collection("tasks")
-    .find({ isDelete: false })
+    .find({ isActive: true, isDelete: false })
     .toArray();
   return tasks;
 };
@@ -96,7 +98,7 @@ const getTasksByAssignedById = async (userId) => {
   const db = await connectDB();
   const tasks = await db
     .collection("tasks")
-    .find({ taskAssignedBy: userId, isDelete: false })
+    .find({ taskAssignedBy: userId, isActive: true, isDelete: false })
     .toArray();
   return tasks;
 };
@@ -106,7 +108,7 @@ const getTasksByAssignedToId = async (userId) => {
   const db = await connectDB();
   const tasks = await db
     .collection("tasks")
-    .find({ taskAssignedTo: userId, isDelete: false })
+    .find({ taskAssignedTo: userId, isActive: true, isDelete: false })
     .toArray();
   return tasks;
 };
@@ -116,7 +118,7 @@ const getTasksByCreatorId = async (creatorId) => {
   const db = await connectDB();
   const tasks = await db
     .collection("tasks")
-    .find({ taskCreatedBy: creatorId, isDelete: false })
+    .find({ taskCreatedBy: creatorId, isActive: true, isDelete: false })
     .toArray();
   return tasks;
 };
@@ -126,21 +128,21 @@ const getTasksByStatus = async (status) => {
   const db = await connectDB();
   const tasks = await db
     .collection("tasks")
-    .find({ taskStatus: status, isDelete: false })
+    .find({ taskStatus: status, isActive: true, isDelete: false })
     .toArray();
   return tasks;
 };
 
 const changeTaskStatusById = async (taskId, newStatus) => {
   const db = await connectDB();
-  const response = await db
-    .collection("tasks")
-    .updateOne(
-      { _id: new ObjectId(taskId), isDelete: false },
-      { $set: { taskStatus: newStatus, updateAt: new Date() } },
-      { returnDocument: "after" }
-    );
-  return response;
+
+  const response = await db.collection("tasks").findOneAndUpdate(
+    { _id: new ObjectId(taskId), isActive: true, isDelete: false },
+    { $set: { taskStatus: newStatus, updateAt: new Date() } },
+    { returnDocument: "after" } // works here ✅
+  );
+
+  return response; // updated task object
 };
 
 module.exports = {
