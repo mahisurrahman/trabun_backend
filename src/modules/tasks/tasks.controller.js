@@ -4,7 +4,7 @@ const taskServices = require("./tasks.service");
 const createTask = async (req, res) => {
   try {
     const response = await taskServices.createTask(req.body);
-    res.send(response);
+    return res.send(response);
   } catch (error) {
     res.send({
       error: true,
@@ -135,6 +135,37 @@ const getTasksByStatus = async (req, res) => {
   }
 };
 
+const getTasksByBacklog = async (req, res) => {
+  try {
+    const response = await taskServices.getTaskByBacklog();
+    res.send(response);
+  } catch (error) {
+    res.send({
+      error: true,
+      status: 500,
+      message: "Get Tasks by Backlog Controller - Internal Server Error",
+      data: [],
+    });
+  }
+};
+
+const updateTaskById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updateData = req.body;
+    const response = await taskServices.updateTaskById(id, updateData);
+    res.send(response);
+  } catch (error) {
+    console.log("Update Task Controller - Internal Server Error", error);
+    res.send({
+      error: true,
+      status: 500,
+      message: "Update Task Controller - Internal Server Error",
+      data: null,
+    });
+  }
+};
+
 // ✅ Change Status by Task ID
 const changeTaskStatusById = async (req, res) => {
   try {
@@ -163,5 +194,7 @@ module.exports = {
   getTasksByAssignedToId,
   getTasksByCreatorId,
   getTasksByStatus,
+  getTasksByBacklog,
   changeTaskStatusById,
+  updateTaskById,
 };

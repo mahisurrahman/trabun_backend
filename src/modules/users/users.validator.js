@@ -19,7 +19,7 @@ const createUser = Joi.object({
 });
 
 const loginUser = Joi.object({
-  username: baseSchema.username,
+  email: baseSchema.email,
   password: baseSchema.password,
 });
 

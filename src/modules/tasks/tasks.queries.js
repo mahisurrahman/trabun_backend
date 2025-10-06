@@ -11,8 +11,10 @@ const createTask = async (data) => {
     taskPriority,
     taskAssignedTo,
     backlog,
+    deadline,
     taskCreatedBy,
     taskAssignedBy,
+    assignedDate,
   } = data;
 
   const db = await connectDB();
@@ -23,8 +25,10 @@ const createTask = async (data) => {
     taskPriority,
     taskAssignedTo,
     backlog,
+    expectedDeadline: deadline,
     taskCreatedBy,
     taskAssignedBy,
+    assignedDate,
     taskStatus: "pending",
     createAt: new Date(),
     updateAt: null,
@@ -40,7 +44,7 @@ const createTask = async (data) => {
 const taskUpdate = async (taskId, updateData) => {
   const db = await connectDB();
 
-  const response = await db.collection("tasks").updateOne(
+  const response = await db.collection("tasks").findOneAndUpdate(
     { _id: new ObjectId(taskId), isDelete: false, isActive: true },
     {
       $set: {
@@ -133,6 +137,20 @@ const getTasksByStatus = async (status) => {
   return tasks;
 };
 
+const getTaskByBacklog = async (status) => {
+  const db = await connectDB();
+  const tasks = await db
+    .collection("tasks")
+    .find({
+      backlog: true,
+      taskAssignedTo: "",
+      isActive: true,
+      isDelete: false,
+    })
+    .toArray();
+  return tasks;
+};
+
 const changeTaskStatusById = async (taskId, newStatus) => {
   const db = await connectDB();
 
@@ -156,5 +174,6 @@ module.exports = {
   getTasksByAssignedToId,
   getTasksByCreatorId,
   getTasksByStatus,
+  getTaskByBacklog,
   changeTaskStatusById,
 };

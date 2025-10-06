@@ -17,7 +17,7 @@ const createUser = async (req, res) => {
 const loginUserContlr = async (req, res) => {
   try {
     const response = await userService.loginUserService(req.body);
-    res.send(response);
+    return res.send(response);
   } catch (error) {
     return {
       error: true,
@@ -45,7 +45,7 @@ const logoutUserContrl = async (req, res) => {
 const getUserInfoContrl = async (req, res) => {
   try {
     const response = await userService.getUserInfoServc(req.user.token);
-    res.send(response);
+    return res.send(response);
   } catch (error) {
     return {
       error: true,

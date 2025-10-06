@@ -33,7 +33,7 @@ const loginUserService = async (credentials) => {
     if (response) {
       return {
         status: 200,
-        error: true,
+        error: false,
         message: "Access Token Generated",
         data: response,
       };
@@ -97,23 +97,27 @@ const getUserInfoServc = async (id) => {
 const getAllUser = async () => {
   try {
     const result = await userQueries.getAllUser();
-    if (result.length >= 0) {
+
+    if (Array.isArray(result) && result.length >= 0) {
+      const sanitizedUsers = result.map(({ password, ...rest }) => rest);
+
+      console.log(sanitizedUsers, "users data");
       return {
         status: 200,
         error: false,
-        message: "User Fetched Sucessfull",
-        data: result,
+        message: "Users fetched successfully",
+        data: sanitizedUsers,
       };
     } else {
       return {
         error: true,
         status: 400,
-        message: "User Fetched Failed",
+        message: "Failed to fetch users",
         data: [],
       };
     }
   } catch (error) {
-    console.error("Error Fetch All Users", error);
+    console.error("Error fetching all users:", error);
     return {
       error: true,
       status: 500,

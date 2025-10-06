@@ -6,6 +6,7 @@ const app = express();
 const userRoutes = require("./modules/users/users.routes");
 const labelRoutes = require("./modules/labels/labels.routes");
 const taskRoutes = require("./modules/tasks/tasks.routes");
+const taskLogRoutes = require("./modules/taskLog/taskLogs.routes");
 const responseMiddleware = require("./middlewares/responseMiddleware");
 
 app.use(express.json());
@@ -23,5 +24,6 @@ app.use(responseMiddleware);
 app.use("/api/v1/user", userRoutes);
 app.use("/api/v1/label", labelRoutes);
 app.use("/api/v1/task", taskRoutes);
+app.use("/api/v1/taskLog", taskLogRoutes);
 
 module.exports = app;

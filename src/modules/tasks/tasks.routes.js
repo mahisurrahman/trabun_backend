@@ -12,5 +12,7 @@ router.get("/get/assignedby/:id", taskController.getTasksByAssignedById);
 router.get("/get/assignedto/:id", taskController.getTasksByAssignedToId);
 router.get("/get/creator/:id", taskController.getTasksByCreatorId);
 router.get("/get/by/status", taskController.getTasksByStatus);
+router.get("/get/by/backlog", taskController.getTasksByBacklog);
+router.post("/upt/:id", taskController.updateTaskById);
 
 module.exports = router;

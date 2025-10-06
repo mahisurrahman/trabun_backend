@@ -42,12 +42,12 @@ const createUser = async (userData) => {
 };
 
 const loginUser = async (credentials) => {
-  const { username, password } = credentials;
+  const { email, password } = credentials;
   const db = await connectDB();
 
   const checkUserExist = await db
     .collection("users")
-    .findOne({ username: username, isActive: true, isDelete: false });
+    .findOne({ email: email, isActive: true, isDelete: false });
 
   if (checkUserExist === null) {
     return checkUserExist;

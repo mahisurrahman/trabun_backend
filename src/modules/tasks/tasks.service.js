@@ -231,6 +231,29 @@ const getTasksByStatus = async (status) => {
   }
 };
 
+const getTaskByBacklog = async () => {
+  try {
+    const response = await taskQuery.getTaskByBacklog();
+    return {
+      status: 200,
+      error: false,
+      message: "Backlog Tasks Retrieved Successfully",
+      data: response,
+    };
+  } catch (error) {
+    console.log(
+      "Get Backlog Tasks by Status Service - Internal Server Error",
+      error
+    );
+    return {
+      status: 500,
+      error: true,
+      message: "Get Backlog Tasks by Status Service - Internal Server Error",
+      data: null,
+    };
+  }
+};
+
 // ✅ Change Task Status by ID
 const changeTaskStatusById = async (taskId, newStatus) => {
   try {
@@ -261,6 +284,35 @@ const changeTaskStatusById = async (taskId, newStatus) => {
   }
 };
 
+const updateTaskById = async (taskId, updateData) => {
+  try {
+    const response = await taskQuery.taskUpdate(taskId, updateData);
+    if (response) {
+      return {
+        status: 200,
+        error: false,
+        message: "Task Updated Successfully",
+        data: response,
+      };
+    } else {
+      return {
+        status: 404,
+        error: true,
+        message: "Task Not Found",
+        data: null,
+      };
+    }
+  } catch (error) {
+    console.log("Update Task Service - Internal Server Error", error);
+    return {
+      status: 500,
+      error: true,
+      message: "Update Task Service - Internal Server Error",
+      data: null,
+    };
+  }
+};
+
 module.exports = {
   createTask,
   softRemoveTask,
@@ -271,5 +323,7 @@ module.exports = {
   getTasksByAssignedToId,
   getTasksByCreatorId,
   getTasksByStatus,
+  getTaskByBacklog,
   changeTaskStatusById,
+  updateTaskById,
 };
