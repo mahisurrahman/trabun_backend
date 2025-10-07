@@ -7,6 +7,7 @@ router.post("/create", taskLogController.createTaskLog);
 
 // Read
 router.get("/all", taskLogController.getAllTaskLogs);
+router.post("/filterTasks/all", taskLogController.getTaskLogsWithFilters);
 router.get("/srcById/:id", taskLogController.getTaskLogById);
 router.get("/assignedto/:id", taskLogController.getTaskLogAssignedToId);
 router.get("/assignedby/:id", taskLogController.getTaskLogAssignedById);

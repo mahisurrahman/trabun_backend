@@ -101,7 +101,6 @@ const getAllUser = async () => {
     if (Array.isArray(result) && result.length >= 0) {
       const sanitizedUsers = result.map(({ password, ...rest }) => rest);
 
-      console.log(sanitizedUsers, "users data");
       return {
         status: 200,
         error: false,

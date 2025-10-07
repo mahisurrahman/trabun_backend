@@ -28,6 +28,28 @@ const getAllTaskLogs = async (req, res) => {
   }
 };
 
+const getTaskLogsWithFilters = async (req, res) => {
+  try {
+    const { assignedToId, taskStatus, startDate, endDate } = req.body;
+
+    const response = await taskLogService.getTaskLogsWithFilters(
+      assignedToId,
+      taskStatus,
+      startDate,
+      endDate
+    );
+
+    return res.send(response);
+  } catch (error) {
+    res.send({
+      error: true,
+      status: 500,
+      message: "Get Task Logs With Filters Controller - Internal Server Error",
+      data: [],
+    });
+  }
+};
+
 const getTaskLogById = async (req, res) => {
   try {
     const response = await taskLogService.getTaskLogById(req.params.id);
@@ -219,6 +241,7 @@ const resumeTaskLog = async (req, res) => {
 module.exports = {
   createTaskLog,
   getAllTaskLogs,
+  getTaskLogsWithFilters,
   getTaskLogById,
   getTaskLogAssignedToId,
   getTaskLogAssignedById,

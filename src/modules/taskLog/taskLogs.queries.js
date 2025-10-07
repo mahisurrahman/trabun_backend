@@ -47,6 +47,56 @@ const getAllTaskLogs = async () => {
     .toArray();
 };
 
+const getTaskLogsWithFilters = async (
+  assignedToId,
+  taskStatus,
+  startDate,
+  endDate
+) => {
+  const db = await connectDB();
+
+  const filter = {
+    assignedToId,
+    taskStatus,
+    createdAt: {
+      $gte: new Date(startDate),
+      $lte: new Date(endDate),
+    },
+    isActive: true,
+    isDelete: false,
+  };
+
+  const taskLogs = await db.collection("taskLogs").find(filter).toArray();
+
+  if (!taskLogs || taskLogs.length === 0) return [];
+
+  const taskIds = [...new Set(taskLogs.map((log) => log.taskId))];
+
+  const tasks = await db
+    .collection("tasks")
+    .find({ _id: { $in: taskIds.map((id) => new ObjectId(id)) } })
+    .project({
+      taskTitle: 1,
+      taskDescription: 1,
+      taskPriority: 1,
+      taskAssignedTo: 1,
+      backlog: 1,
+      expectedDeadline: "$deadline",
+      assignedDate: 1,
+    })
+    .toArray();
+
+  const taskMap = tasks.reduce((acc, task) => {
+    acc[task._id.toString()] = task;
+    return acc;
+  }, {});
+
+  return taskLogs.map((log) => ({
+    ...log,
+    taskDetails: taskMap[log.taskId] || null,
+  }));
+};
+
 const getTaskLogById = async (id) => {
   const db = await connectDB();
   return await db
@@ -210,6 +260,7 @@ const resumeTaskLog = async (id) => {
 module.exports = {
   createTaskLog,
   getAllTaskLogs,
+  getTaskLogsWithFilters,
   getTaskLogById,
   getTaskLogAssignedToId,
   getTaskLogAssignedById,

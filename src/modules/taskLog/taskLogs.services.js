@@ -58,6 +58,49 @@ const getAllTaskLogs = async () => {
   }
 };
 
+const getTaskLogsWithFilters = async (
+  assignedToId,
+  taskStatus,
+  startDate,
+  endDate
+) => {
+  try {
+    const response = await taskLogQuery.getTaskLogsWithFilters(
+      assignedToId,
+      taskStatus,
+      startDate,
+      endDate
+    );
+
+    if (response && response.length > 0) {
+      return {
+        status: 200,
+        error: false,
+        message: "Filtered Task Logs Retrieved Successfully",
+        data: response,
+      };
+    } else {
+      return {
+        status: 404,
+        error: true,
+        message: "No Task Logs Found for Given Filters",
+        data: [],
+      };
+    }
+  } catch (error) {
+    console.log(
+      "Get Task Logs With Filters Service - Internal Server Error",
+      error
+    );
+    return {
+      status: 500,
+      error: true,
+      message: "Get Task Logs With Filters Service - Internal Server Error",
+      data: null,
+    };
+  }
+};
+
 const getTaskLogById = async (id) => {
   try {
     const response = await taskLogQuery.getTaskLogById(id);
@@ -450,6 +493,7 @@ const resumeTaskLog = async (id) => {
 module.exports = {
   createTaskLog,
   getAllTaskLogs,
+  getTaskLogsWithFilters,
   getTaskLogById,
   getTaskLogAssignedToId,
   getTaskLogAssignedById,
