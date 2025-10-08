@@ -70,8 +70,10 @@ const getTaskLogsWithFilters = async (
 
   if (!taskLogs || taskLogs.length === 0) return [];
 
+  // Get unique task IDs from logs
   const taskIds = [...new Set(taskLogs.map((log) => log.taskId))];
 
+  // Fetch the related tasks
   const tasks = await db
     .collection("tasks")
     .find({ _id: { $in: taskIds.map((id) => new ObjectId(id)) } })
@@ -80,21 +82,78 @@ const getTaskLogsWithFilters = async (
       taskDescription: 1,
       taskPriority: 1,
       taskAssignedTo: 1,
+      taskAssignedBy: 1,
+      taskCreatedBy: 1,
       backlog: 1,
-      expectedDeadline: "$deadline",
+      expectedDeadline: 1,
       assignedDate: 1,
     })
     .toArray();
 
+  // Map task IDs to their data
   const taskMap = tasks.reduce((acc, task) => {
     acc[task._id.toString()] = task;
     return acc;
   }, {});
 
-  return taskLogs.map((log) => ({
-    ...log,
-    taskDetails: taskMap[log.taskId] || null,
-  }));
+  // Collect all user IDs (for one bulk query)
+  const userIds = [
+    ...new Set(
+      tasks.flatMap((t) => [
+        t.taskAssignedTo,
+        t.taskAssignedBy,
+        t.taskCreatedBy,
+      ])
+    ),
+  ].filter(Boolean);
+
+  // Fetch all related users
+  const users = await db
+    .collection("users")
+    .find({ _id: { $in: userIds.map((id) => new ObjectId(id)) } })
+    .project({
+      username: 1,
+      email: 1,
+      traId: 1,
+      userType:1,
+      // profileImage: 1,
+      designation: 1,
+      // department: 1,
+    })
+    .toArray();
+
+  // Map users by ID
+  const userMap = users.reduce((acc, user) => {
+    acc[user._id.toString()] = user;
+    return acc;
+  }, {});
+
+  // Return with user info added (but keeping your original structure)
+  return taskLogs.map((log) => {
+    const task = taskMap[log.taskId];
+    if (!task) return log;
+
+    return {
+      ...log,
+      assignedToId: task.taskAssignedTo || null,
+      assignedById: task.taskAssignedBy || null,
+      creatorId: task.taskCreatedBy || null,
+
+      assignedToDetails: userMap[task.taskAssignedTo?.toString()] || null,
+      assignedByDetails: userMap[task.taskAssignedBy?.toString()] || null,
+      creatorDetails: userMap[task.taskCreatedBy?.toString()] || null,
+
+      // Preserve your existing taskDetails structure
+      taskDetails: {
+        taskTitle: task.taskTitle,
+        taskDescription: task.taskDescription,
+        taskPriority: task.taskPriority,
+        backlog: task.backlog,
+        expectedDeadline: task.expectedDeadline,
+        assignedDate: task.assignedDate,
+      },
+    };
+  });
 };
 
 const getTaskLogById = async (id) => {
