@@ -16,7 +16,7 @@ router.get("/srcByTask/:id", taskLogController.getTaskLogByTaskId);
 
 // Update
 router.put("/update/:id", taskLogController.updateTaskLog);
-router.put("/updateStatus/:id", taskLogController.updateTaskStatus);
+router.post("/updateStatus/:id", taskLogController.updateTaskStatus);
 
 // Pause / Resume / End
 router.put("/pause/:id", taskLogController.pauseTaskLog);

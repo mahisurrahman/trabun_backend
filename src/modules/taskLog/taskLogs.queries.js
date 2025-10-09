@@ -27,6 +27,10 @@ const createTaskLog = async (data) => {
     creatorId,
     assignedById: creatorId,
     isStateComplete: false,
+    totalPendingTime: 0,
+    totalInQueTime:0,
+    totalOnGoingTime:0,
+    totalReviewTime:0,
     status: true,
     isPause: false,
     isActive: true,
@@ -209,11 +213,23 @@ const updateTaskStatus = async (id, newStatus) => {
   const result = await db
     .collection("taskLogs")
     .findOneAndUpdate(
-      { _id: new ObjectId(id), isActive: true, isDelete: false },
+      { taskId: id, isActive: true, isDelete: false },
       { $set: { taskStatus: newStatus, updatedAt: new Date() } },
       { returnDocument: "after" }
     );
-  return result;
+
+    if(result){
+      const updateTask = await db
+      .collection("tasks")
+      .findOneAndUpdate(
+        {_id: new ObjectId(id), isActive: true, isDelete: false },
+        {$set: {taskStatus: newStatus, updateAt: new Date()}},
+        {returnDocument: "after"}
+      )
+
+      return result;
+    }
+  
 };
 
 const softDeleteTaskLog = async (id) => {

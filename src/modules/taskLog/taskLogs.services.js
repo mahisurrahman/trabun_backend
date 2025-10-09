@@ -261,6 +261,7 @@ const getTaskLogByTaskId = async (id) => {
 const updateTaskLog = async (id, updateData) => {
   try {
     const response = await taskLogQuery.updateTaskLog(id, updateData);
+
     if (response.value) {
       return {
         status: 200,
@@ -290,12 +291,12 @@ const updateTaskLog = async (id, updateData) => {
 const updateTaskStatus = async (id, newStatus) => {
   try {
     const response = await taskLogQuery.updateTaskStatus(id, newStatus);
-    if (response.value) {
+    if (response) {
       return {
         status: 200,
         error: false,
         message: "Task Status Updated Successfully",
-        data: response.value,
+        data: response,
       };
     } else {
       return {
