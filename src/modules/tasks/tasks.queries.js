@@ -94,6 +94,17 @@ const getAllTasks = async () => {
     .collection("tasks")
     .find({ isActive: true, isDelete: false })
     .toArray();
+
+  // If you want to populate taskCreatedBy for each task
+  for (let task of tasks) {
+    if (task.taskCreatedBy) {
+      const user = await db
+        .collection("users")
+        .findOne({ _id: new ObjectId(task.taskCreatedBy) });
+      task.taskCreatedBy = user;
+    }
+  }
+
   return tasks;
 };
 

@@ -28,9 +28,9 @@ const createTaskLog = async (data) => {
     assignedById: creatorId,
     isStateComplete: false,
     totalPendingTime: 0,
-    totalInQueTime:0,
-    totalOnGoingTime:0,
-    totalReviewTime:0,
+    totalInQueTime: 0,
+    totalOnGoingTime: 0,
+    totalReviewTime: 0,
     status: true,
     isPause: false,
     isActive: true,
@@ -51,20 +51,18 @@ const getAllTaskLogs = async () => {
     .toArray();
 };
 
-const getTaskLogsWithFilters = async (
-  assignedToId,
-  taskStatus,
-  startDate,
-  endDate
-) => {
+const getTaskLogsWithFilters = async (startDate, endDate) => {
   const db = await connectDB();
 
+  // Convert to actual Date objects
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+
   const filter = {
-    assignedToId,
-    taskStatus,
+    isStateComplete: false,
     createdAt: {
-      $gte: new Date(startDate),
-      $lte: new Date(endDate),
+      $gte: start,
+      $lte: end,
     },
     isActive: true,
     isDelete: false,
@@ -72,12 +70,14 @@ const getTaskLogsWithFilters = async (
 
   const taskLogs = await db.collection("taskLogs").find(filter).toArray();
 
-  if (!taskLogs || taskLogs.length === 0) return [];
+  if (!taskLogs || taskLogs.length === 0) {
+    console.log("No task logs found for the given range.");
+    return [];
+  }
 
-  // Get unique task IDs from logs
+  // 🧠 Rest of your code unchanged
   const taskIds = [...new Set(taskLogs.map((log) => log.taskId))];
 
-  // Fetch the related tasks
   const tasks = await db
     .collection("tasks")
     .find({ _id: { $in: taskIds.map((id) => new ObjectId(id)) } })
@@ -94,13 +94,11 @@ const getTaskLogsWithFilters = async (
     })
     .toArray();
 
-  // Map task IDs to their data
   const taskMap = tasks.reduce((acc, task) => {
     acc[task._id.toString()] = task;
     return acc;
   }, {});
 
-  // Collect all user IDs (for one bulk query)
   const userIds = [
     ...new Set(
       tasks.flatMap((t) => [
@@ -111,7 +109,6 @@ const getTaskLogsWithFilters = async (
     ),
   ].filter(Boolean);
 
-  // Fetch all related users
   const users = await db
     .collection("users")
     .find({ _id: { $in: userIds.map((id) => new ObjectId(id)) } })
@@ -119,20 +116,16 @@ const getTaskLogsWithFilters = async (
       username: 1,
       email: 1,
       traId: 1,
-      userType:1,
-      // profileImage: 1,
+      userType: 1,
       designation: 1,
-      // department: 1,
     })
     .toArray();
 
-  // Map users by ID
   const userMap = users.reduce((acc, user) => {
     acc[user._id.toString()] = user;
     return acc;
   }, {});
 
-  // Return with user info added (but keeping your original structure)
   return taskLogs.map((log) => {
     const task = taskMap[log.taskId];
     if (!task) return log;
@@ -142,12 +135,9 @@ const getTaskLogsWithFilters = async (
       assignedToId: task.taskAssignedTo || null,
       assignedById: task.taskAssignedBy || null,
       creatorId: task.taskCreatedBy || null,
-
       assignedToDetails: userMap[task.taskAssignedTo?.toString()] || null,
       assignedByDetails: userMap[task.taskAssignedBy?.toString()] || null,
       creatorDetails: userMap[task.taskCreatedBy?.toString()] || null,
-
-      // Preserve your existing taskDetails structure
       taskDetails: {
         taskTitle: task.taskTitle,
         taskDescription: task.taskDescription,
@@ -208,28 +198,53 @@ const updateTaskLog = async (id, updateData) => {
   return result;
 };
 
-const updateTaskStatus = async (id, newStatus) => {
+const updateTaskStatus = async (id, body) => {
+  const { startTime, endTime, newStatus } = body;
+
   const db = await connectDB();
-  const result = await db
-    .collection("taskLogs")
-    .findOneAndUpdate(
-      { taskId: id, isActive: true, isDelete: false },
-      { $set: { taskStatus: newStatus, updatedAt: new Date() } },
+
+  // Calculate total duration (in milliseconds)
+  const totalDurationMs = new Date(endTime) - new Date(startTime);
+
+  // Convert to hours/minutes/seconds if needed
+  const totalDuration = {
+    milliseconds: totalDurationMs,
+    seconds: Math.floor(totalDurationMs / 1000),
+    minutes: Math.floor(totalDurationMs / (1000 * 60)),
+    hours: Math.floor(totalDurationMs / (1000 * 60 * 60)),
+  };
+
+  // 1️⃣ Update taskLogs
+  const result = await db.collection("taskLogs").findOneAndUpdate(
+    { taskId: id, isActive: true, isDelete: false },
+    {
+      $set: {
+        isStateComplete: true,
+        endTime: endTime,
+        totalDuration,
+        updatedAt: new Date(),
+      },
+    },
+    { returnDocument: "after" }
+  );
+
+  // 2️⃣ Update tasks with totalDuration and status
+  if (result) {
+    const updateTask = await db.collection("tasks").findOneAndUpdate(
+      { _id: new ObjectId(id), isActive: true, isDelete: false },
+      {
+        $set: {
+          taskStatus: newStatus,
+          updatedAt: new Date(),
+        },
+      },
       { returnDocument: "after" }
     );
 
-    if(result){
-      const updateTask = await db
-      .collection("tasks")
-      .findOneAndUpdate(
-        {_id: new ObjectId(id), isActive: true, isDelete: false },
-        {$set: {taskStatus: newStatus, updateAt: new Date()}},
-        {returnDocument: "after"}
-      )
+    return result;
+  }
 
-      return result;
-    }
-  
+  return null;
 };
 
 const softDeleteTaskLog = async (id) => {

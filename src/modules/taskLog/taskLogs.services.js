@@ -58,16 +58,9 @@ const getAllTaskLogs = async () => {
   }
 };
 
-const getTaskLogsWithFilters = async (
-  assignedToId,
-  taskStatus,
-  startDate,
-  endDate
-) => {
+const getTaskLogsWithFilters = async (startDate, endDate) => {
   try {
     const response = await taskLogQuery.getTaskLogsWithFilters(
-      assignedToId,
-      taskStatus,
       startDate,
       endDate
     );
@@ -288,9 +281,9 @@ const updateTaskLog = async (id, updateData) => {
   }
 };
 
-const updateTaskStatus = async (id, newStatus) => {
+const updateTaskStatus = async (id, body) => {
   try {
-    const response = await taskLogQuery.updateTaskStatus(id, newStatus);
+    const response = await taskLogQuery.updateTaskStatus(id, body);
     if (response) {
       return {
         status: 200,

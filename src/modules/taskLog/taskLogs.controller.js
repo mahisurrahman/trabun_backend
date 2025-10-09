@@ -3,6 +3,7 @@ const taskLogService = require("./taskLogs.services");
 const createTaskLog = async (req, res) => {
   try {
     const response = await taskLogService.createTaskLog(req.body);
+
     res.send(response);
   } catch (error) {
     res.send({
@@ -30,11 +31,8 @@ const getAllTaskLogs = async (req, res) => {
 
 const getTaskLogsWithFilters = async (req, res) => {
   try {
-    const { assignedToId, taskStatus, startDate, endDate } = req.body;
-
+    const { startDate, endDate } = req.body;
     const response = await taskLogService.getTaskLogsWithFilters(
-      assignedToId,
-      taskStatus,
       startDate,
       endDate
     );
@@ -141,7 +139,7 @@ const updateTaskStatus = async (req, res) => {
   try {
     const response = await taskLogService.updateTaskStatus(
       req.params.id,
-      req.body.taskStatus
+      req.body
     );
     res.send(response);
   } catch (error) {
