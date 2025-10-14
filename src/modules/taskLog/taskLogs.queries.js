@@ -1,6 +1,7 @@
 require("dotenv").config();
 const { ObjectId } = require("mongodb");
 const connectDB = require("../../config/db");
+const timeLineQueries = require("../timeline/timeline.queries");
 
 const createTaskLog = async (data) => {
   const {
@@ -40,6 +41,13 @@ const createTaskLog = async (data) => {
   };
 
   const result = await db.collection("taskLogs").insertOne(taskLog);
+  if (result.insertedId) {
+    const payload = {
+      taskId: taskId,
+      newStatus: taskStatus,
+    };
+    const resultTwo = timeLineQueries.createTimeLineLog(payload);
+  }
   return { ...taskLog, _id: result.insertedId };
 };
 
@@ -214,32 +222,42 @@ const updateTaskStatus = async (id, body) => {
     hours: Math.floor(totalDurationMs / (1000 * 60 * 60)),
   };
 
+  console.log(id, "task id");
+  console.log(newStatus, "New Statush");
+
   // 1️⃣ Update taskLogs
   const result = await db.collection("taskLogs").findOneAndUpdate(
-    { taskId: id, isActive: true, isDelete: false },
+    { taskId: id, isStateComplete: false, isActive: true, isDelete: false },
     {
       $set: {
         isStateComplete: true,
         endTime: endTime,
         totalDuration,
+        // taskStatus: newStatus,
         updatedAt: new Date(),
       },
     },
     { returnDocument: "after" }
   );
 
+  console.log(result.value, "REsult");
+
+  const stat = newStatus.toLowerCase();
+
   // 2️⃣ Update tasks with totalDuration and status
-  if (result) {
+  if (result._id) {
     const updateTask = await db.collection("tasks").findOneAndUpdate(
       { _id: new ObjectId(id), isActive: true, isDelete: false },
       {
         $set: {
-          taskStatus: newStatus,
+          taskStatus: stat,
           updatedAt: new Date(),
         },
       },
       { returnDocument: "after" }
     );
+
+    // console.log(updateTask, "Update Task");
 
     return result;
   }

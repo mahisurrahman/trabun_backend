@@ -3,7 +3,7 @@ const { ObjectId } = require("mongodb");
 const connectDB = require("../../config/db");
 
 const createTimeLineLog = async (data) => {
-  const { taskId, timeLineDate, newStatus } = data;
+  const { taskId, newStatus } = data;
 
   const db = await connectDB();
 
