@@ -310,6 +310,93 @@ const updateTaskStatus = async (id, body) => {
   }
 };
 
+const startTask = async (id) => {
+  try {
+    const response = await taskLogQuery.startTaskLog(id);
+    if (response) {
+      return {
+        status: 200,
+        error: false,
+        message: "Task Started Successfully",
+        data: response,
+      };
+    } else {
+      return {
+        status: 400,
+        error: true,
+        message: "Failed to Start Task",
+        data: null,
+      };
+    }
+  } catch (error) {
+    console.log(" Task Start Service - Internal Server Error", error);
+    return {
+      status: 500,
+      error: true,
+      message: " Task Start Service - Internal Server Error",
+      data: null,
+    };
+  }
+};
+
+const pauseTask = async (id) => {
+  try {
+    const response = await taskLogQuery.pauseTask(id);
+    if (response) {
+      return {
+        status: 200,
+        error: false,
+        message: "Task Paused Successfully",
+        data: response,
+      };
+    } else {
+      return {
+        status: 400,
+        error: true,
+        message: "Failed to Pause Task",
+        data: null,
+      };
+    }
+  } catch (error) {
+    console.log(" Task Pause Service - Internal Server Error", error);
+    return {
+      status: 500,
+      error: true,
+      message: " Task Pause Service - Internal Server Error",
+      data: null,
+    };
+  }
+};
+
+const resumeTask = async (id) => {
+  try {
+    const response = await taskLogQuery.resumeTaskLog(id);
+    if (response) {
+      return {
+        status: 200,
+        error: false,
+        message: "Task Resumed Successfully",
+        data: response,
+      };
+    } else {
+      return {
+        status: 400,
+        error: true,
+        message: "Failed to Resume Task",
+        data: null,
+      };
+    }
+  } catch (error) {
+    console.log(" Task Resume Service - Internal Server Error", error);
+    return {
+      status: 500,
+      error: true,
+      message: " Task Resume Service - Internal Server Error",
+      data: null,
+    };
+  }
+};
+
 const softDeleteTaskLog = async (id) => {
   try {
     const response = await taskLogQuery.softDeleteTaskLog(id);
@@ -498,7 +585,10 @@ module.exports = {
   softDeleteTaskLog,
   restoreTaskLog,
   hardDeleteTaskLog,
-  endTaskLog,
-  pauseTaskLog,
-  resumeTaskLog,
+  // endTaskLog,
+  // pauseTaskLog,
+  // resumeTaskLog,
+  startTask,
+  pauseTask,
+  resumeTask,
 };

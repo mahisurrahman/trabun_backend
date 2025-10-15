@@ -5,7 +5,6 @@ const timeLineQueries = require("../timeline/timeline.queries");
 
 const createTaskLog = async (data) => {
   const {
-    startTime,
     assignedDate,
     expectedDuration,
     taskStatus,
@@ -18,7 +17,7 @@ const createTaskLog = async (data) => {
 
   const taskLog = {
     taskId,
-    startTime,
+    startTime: 0,
     endTime: 0,
     assignedDate,
     expectedDuration,
@@ -160,9 +159,82 @@ const getTaskLogsWithFilters = async (startDate, endDate) => {
 
 const getTaskLogById = async (id) => {
   const db = await connectDB();
-  return await db
+
+  // 🧩 Fetch the main task log
+  const log = await db
     .collection("taskLogs")
     .findOne({ _id: new ObjectId(id), isActive: true, isDelete: false });
+
+  if (!log) {
+    console.log("No task log found with the given ID.");
+    return null;
+  }
+
+  // 🧩 Fetch the related task
+  const task = await db.collection("tasks").findOne(
+    { _id: new ObjectId(log.taskId) },
+    {
+      projection: {
+        taskTitle: 1,
+        taskDescription: 1,
+        taskPriority: 1,
+        taskAssignedTo: 1,
+        taskAssignedBy: 1,
+        taskCreatedBy: 1,
+        backlog: 1,
+        expectedDeadline: 1,
+        assignedDate: 1,
+      },
+    }
+  );
+
+  if (!task) {
+    // Return log alone if the related task no longer exists
+    return log;
+  }
+
+  // 🧩 Collect all user IDs from the task
+  const userIds = [task.taskAssignedTo, task.taskAssignedBy, task.taskCreatedBy]
+    .filter(Boolean)
+    .map((id) => new ObjectId(id));
+
+  // 🧩 Fetch user details
+  const users = await db
+    .collection("users")
+    .find({ _id: { $in: userIds } })
+    .project({
+      username: 1,
+      email: 1,
+      traId: 1,
+      userType: 1,
+      designation: 1,
+    })
+    .toArray();
+
+  // 🧩 Create a user map for easy lookup
+  const userMap = users.reduce((acc, user) => {
+    acc[user._id.toString()] = user;
+    return acc;
+  }, {});
+
+  // 🧩 Return enriched log (same format as `getTaskLogsWithFilters`)
+  return {
+    ...log,
+    assignedToId: task.taskAssignedTo || null,
+    assignedById: task.taskAssignedBy || null,
+    creatorId: task.taskCreatedBy || null,
+    assignedToDetails: userMap[task.taskAssignedTo?.toString()] || null,
+    assignedByDetails: userMap[task.taskAssignedBy?.toString()] || null,
+    creatorDetails: userMap[task.taskCreatedBy?.toString()] || null,
+    taskDetails: {
+      taskTitle: task.taskTitle,
+      taskDescription: task.taskDescription,
+      taskPriority: task.taskPriority,
+      backlog: task.backlog,
+      expectedDeadline: task.expectedDeadline,
+      assignedDate: task.assignedDate,
+    },
+  };
 };
 
 const getTaskLogAssignedToId = async (id) => {
@@ -231,7 +303,7 @@ const updateTaskStatus = async (id, body) => {
     {
       $set: {
         isStateComplete: true,
-        endTime: endTime,
+        // endTime: endTime,
         totalDuration,
         // taskStatus: newStatus,
         updatedAt: new Date(),
@@ -265,6 +337,150 @@ const updateTaskStatus = async (id, body) => {
   return null;
 };
 
+const startTaskLog = async (id) => {
+  const db = await connectDB();
+  const result = await db.collection("taskLogs").findOneAndUpdate(
+    { _id: new ObjectId(id) },
+    {
+      $set: {
+        startTime: new Date().toISOString(),
+        isPause: false,
+        updatedAt: new Date().toISOString(),
+      },
+    },
+    { returnDocument: "after" }
+  );
+  return result;
+};
+
+const pauseTaskLog = async (id) => {
+  const db = await connectDB();
+
+  const fetchStartTime = await db.collection("taskLogs").findOne({
+    _id: new ObjectId(id),
+    isActive: true,
+    isDelete: false,
+  });
+
+  if (!fetchStartTime) {
+    throw new Error("Active task log not found");
+  }
+
+  if (!fetchStartTime.startTime) {
+    throw new Error("Start time not found in task log");
+  }
+
+  const startTime = new Date(fetchStartTime.startTime);
+  const endTime = new Date();
+  const durationMs = endTime - startTime;
+
+  let totalOnGoingTime = 0;
+
+  if (
+    !fetchStartTime.totalOnGoingTime ||
+    fetchStartTime.totalOnGoingTime === 0
+  ) {
+    totalOnGoingTime = durationMs;
+  } else {
+    totalOnGoingTime = fetchStartTime.totalOnGoingTime + durationMs;
+  }
+
+  const result = await db.collection("taskLogs").findOneAndUpdate(
+    { _id: new ObjectId(id) },
+    {
+      $set: {
+        isPause: true,
+        endTime,
+        totalOnGoingTime,
+        updatedAt: new Date().toISOString(),
+      },
+    },
+    { returnDocument: "after" }
+  );
+
+  return result.value;
+};
+
+const pauseTask = async (id) => {
+  const db = await connectDB();
+
+  const findStartTime = await db
+    .collection("taskLogs")
+    .findOne({ _id: new ObjectId(id), isActive: true, isDelete: false });
+
+  if (!findStartTime || !findStartTime.startTime) {
+    throw new Error("Active task log or start time not found");
+  }
+
+  const startTime = new Date(findStartTime.startTime);
+  const endTime = new Date();
+  const diffMs = endTime - startTime;
+
+  const totalSeconds = Math.floor(diffMs / 1000);
+  const newHours = Math.floor(totalSeconds / 3600);
+  const newMinutes = Math.floor((totalSeconds % 3600) / 60);
+  const newSeconds = totalSeconds % 60;
+
+  const newDurationInSeconds = newHours * 3600 + newMinutes * 60 + newSeconds;
+
+  let previousDurationInSeconds = 0;
+
+  if (findStartTime.totalOnGoingTime) {
+    const [prevHours, prevMinutes, prevSeconds] = findStartTime.totalOnGoingTime
+      .split(":")
+      .map(Number);
+    previousDurationInSeconds =
+      prevHours * 3600 + prevMinutes * 60 + prevSeconds;
+  }
+
+  const totalDurationInSeconds =
+    previousDurationInSeconds + newDurationInSeconds;
+
+  const totalHours = Math.floor(totalDurationInSeconds / 3600);
+  const totalMinutes = Math.floor((totalDurationInSeconds % 3600) / 60);
+  const totalSecondsFinal = totalDurationInSeconds % 60;
+
+  const totalDuration = `${totalHours
+    .toString()
+    .padStart(2, "0")}:${totalMinutes
+    .toString()
+    .padStart(2, "0")}:${totalSecondsFinal.toString().padStart(2, "0")}`;
+
+  const result = await db.collection("taskLogs").findOneAndUpdate(
+    { _id: new ObjectId(id) },
+    {
+      $set: {
+        endTime: endTime.toISOString(),
+        totalOnGoingTime: totalDuration,
+        isPause: true,
+        updatedAt: endTime.toISOString(),
+      },
+    },
+    { returnDocument: "after" }
+  );
+
+  console.log("Task paused successfully:", totalDuration);
+  return result;
+};
+
+const resumeTaskLog = async (id) => {
+  const db = await connectDB();
+
+  const result = await db.collection("taskLogs").findOneAndUpdate(
+    { _id: new ObjectId(id) },
+    {
+      $set: {
+        startTime: new Date(),
+        endTime: 0,
+        isPause: false,
+        updatedAt: new Date(),
+      },
+    },
+    { returnDocument: "after" }
+  );
+  return result;
+};
+
 const softDeleteTaskLog = async (id) => {
   const db = await connectDB();
   const result = await db
@@ -296,74 +512,74 @@ const hardDeleteTaskLog = async (id) => {
   return result.deletedCount > 0;
 };
 
-const endTaskLog = async (id) => {
-  const db = await connectDB();
-  const log = await db
-    .collection("taskLogs")
-    .findOne({ _id: new ObjectId(id) });
-  if (!log || !log.startTime) return false;
-  const endTime = new Date();
-  const takenDuration =
-    (endTime.getTime() -
-      new Date(log.startTime).getTime() -
-      (log.totalPauseTime || 0)) /
-    1000;
-  const result = await db.collection("taskLogs").findOneAndUpdate(
-    { _id: new ObjectId(id) },
-    {
-      $set: {
-        endTime,
-        takenDuration,
-        updatedAt: new Date(),
-        taskStatus: "completed",
-      },
-    },
-    { returnDocument: "after" }
-  );
-  return result;
-};
+// const endTaskLog = async (id) => {
+//   const db = await connectDB();
+//   const log = await db
+//     .collection("taskLogs")
+//     .findOne({ _id: new ObjectId(id) });
+//   if (!log || !log.startTime) return false;
+//   const endTime = new Date();
+//   const takenDuration =
+//     (endTime.getTime() -
+//       new Date(log.startTime).getTime() -
+//       (log.totalPauseTime || 0)) /
+//     1000;
+//   const result = await db.collection("taskLogs").findOneAndUpdate(
+//     { _id: new ObjectId(id) },
+//     {
+//       $set: {
+//         endTime,
+//         takenDuration,
+//         updatedAt: new Date(),
+//         taskStatus: "completed",
+//       },
+//     },
+//     { returnDocument: "after" }
+//   );
+//   return result;
+// };
 
-const pauseTaskLog = async (id) => {
-  const db = await connectDB();
-  const log = await db
-    .collection("taskLogs")
-    .findOne({ _id: new ObjectId(id) });
-  if (!log || log.pauseStartTime) return false;
-  const result = await db.collection("taskLogs").updateOne(
-    { _id: new ObjectId(id) },
-    {
-      $set: {
-        pauseStartTime: new Date(),
-        taskStatus: "paused",
-        updatedAt: new Date(),
-      },
-    }
-  );
-  return result.modifiedCount > 0;
-};
+// const pauseTaskLog = async (id) => {
+//   const db = await connectDB();
+//   const log = await db
+//     .collection("taskLogs")
+//     .findOne({ _id: new ObjectId(id) });
+//   if (!log || log.pauseStartTime) return false;
+//   const result = await db.collection("taskLogs").updateOne(
+//     { _id: new ObjectId(id) },
+//     {
+//       $set: {
+//         pauseStartTime: new Date(),
+//         taskStatus: "paused",
+//         updatedAt: new Date(),
+//       },
+//     }
+//   );
+//   return result.modifiedCount > 0;
+// };
 
-const resumeTaskLog = async (id) => {
-  const db = await connectDB();
-  const log = await db
-    .collection("taskLogs")
-    .findOne({ _id: new ObjectId(id) });
-  if (!log || !log.pauseStartTime) return false;
-  const now = new Date();
-  const pauseDuration = now.getTime() - new Date(log.pauseStartTime).getTime();
-  const newTotalPause = (log.totalPauseTime || 0) + pauseDuration;
-  const result = await db.collection("taskLogs").updateOne(
-    { _id: new ObjectId(id) },
-    {
-      $set: {
-        pauseStartTime: null,
-        totalPauseTime: newTotalPause,
-        taskStatus: "in_progress",
-        updatedAt: new Date(),
-      },
-    }
-  );
-  return result.modifiedCount > 0;
-};
+// const resumeTaskLog = async (id) => {
+//   const db = await connectDB();
+//   const log = await db
+//     .collection("taskLogs")
+//     .findOne({ _id: new ObjectId(id) });
+//   if (!log || !log.pauseStartTime) return false;
+//   const now = new Date();
+//   const pauseDuration = now.getTime() - new Date(log.pauseStartTime).getTime();
+//   const newTotalPause = (log.totalPauseTime || 0) + pauseDuration;
+//   const result = await db.collection("taskLogs").updateOne(
+//     { _id: new ObjectId(id) },
+//     {
+//       $set: {
+//         pauseStartTime: null,
+//         totalPauseTime: newTotalPause,
+//         taskStatus: "in_progress",
+//         updatedAt: new Date(),
+//       },
+//     }
+//   );
+//   return result.modifiedCount > 0;
+// };
 
 module.exports = {
   createTaskLog,
@@ -379,7 +595,11 @@ module.exports = {
   softDeleteTaskLog,
   restoreTaskLog,
   hardDeleteTaskLog,
-  endTaskLog,
-  pauseTaskLog,
+  // endTaskLog,
+  // pauseTaskLog,
+  // resumeTaskLog,
+  startTaskLog,
+  pauseTask,
   resumeTaskLog,
+  pauseTaskLog,
 };

@@ -166,6 +166,48 @@ const softDeleteTaskLog = async (req, res) => {
   }
 };
 
+const taskLogStart = async (req, res) => {
+  try {
+    const response = await taskLogService.startTask(req.params.id);
+    res.send(response);
+  } catch (error) {
+    res.send({
+      error: true,
+      status: 500,
+      message: "Start Task Log Controller - Internal Server Error",
+      data: [],
+    });
+  }
+};
+
+const taskLogPause = async (req, res) => {
+  try {
+    const response = await taskLogService.pauseTask(req.params.id);
+    res.send(response);
+  } catch (error) {
+    res.send({
+      error: true,
+      status: 500,
+      message: "Pause Task Log Controller - Internal Server Error",
+      data: [],
+    });
+  }
+};
+
+const taskLogResume = async (req, res) => {
+  try {
+    const response = await taskLogService.resumeTask(req.params.id);
+    res.send(response);
+  } catch (error) {
+    res.send({
+      error: true,
+      status: 500,
+      message: "Resume Task Log Controller - Internal Server Error",
+      data: [],
+    });
+  }
+};
+
 const restoreTaskLog = async (req, res) => {
   try {
     const response = await taskLogService.restoreTaskLog(req.params.id);
@@ -250,7 +292,10 @@ module.exports = {
   softDeleteTaskLog,
   restoreTaskLog,
   hardDeleteTaskLog,
-  endTaskLog,
-  pauseTaskLog,
-  resumeTaskLog,
+  // endTaskLog,
+  // pauseTaskLog,
+  // resumeTaskLog,
+  taskLogStart,
+  taskLogPause,
+  taskLogResume,
 };
