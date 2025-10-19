@@ -1,6 +1,7 @@
 require("dotenv").config();
 const { ObjectId } = require("mongodb");
 const connectDB = require("../../config/db");
+const notificationController = require("../notificationControll/notificationControll.queries");
 
 // ======================
 // 🟢 Create Comment
@@ -32,6 +33,7 @@ const createComment = async (commentData) => {
   };
 
   const response = await db.collection("comments").insertOne(newComment);
+  // const ntifycntrl = await
   return {
     ...newComment,
     _id: response.insertedId,

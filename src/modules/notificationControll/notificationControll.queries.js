@@ -33,13 +33,16 @@ const createNotificationControl = async (data) => {
   };
 
   const result = await Db.collection("notificationControl").insertOne(payload);
-  for (const follower of followers) {
-    await notificationQueries.createNotification({
-      assignToId: follower.receiverId,
-      taskTitle: payload.taskTitle,
-      notificationType: 1,
-      message: `New task created for: ${taskTitle}`,
-    });
+  if (result.insertedId) {
+    for (const follower of followers) {
+      await notificationQueries.createNotification({
+        taskId: payload.taskId,
+        assignToId: follower.receiverId,
+        taskTitle: payload.taskTitle,
+        notificationType: 1,
+        message: `New task created for: ${taskTitle}`,
+      });
+    }
   }
   return result;
 };

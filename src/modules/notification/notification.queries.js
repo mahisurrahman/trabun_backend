@@ -7,7 +7,8 @@ const connectDB = require("../../config/db");
 // =============================
 const createNotification = async (data) => {
   const db = await connectDB();
-  const { assignToId, notificationType, message } = data;
+  const { notificationControllerId, assignToId, notificationType, message } =
+    data;
 
   const notification = {
     receiverId: assignToId,
@@ -22,6 +23,19 @@ const createNotification = async (data) => {
 
   const result = await db.collection("notifications").insertOne(notification);
   return { ...notification, _id: result.insertedId };
+};
+
+// =============================
+// ✅ Seen NOTIFICATIONS
+// =============================
+const seenNotifications = async (id) => {
+  const db = await connectDB();
+  const notifications = await db
+    .collection("notifications")
+    .find({ isDeleted: false, ...filter })
+    .sort({ createdAt: -1 })
+    .toArray();
+  return notifications;
 };
 
 // =============================

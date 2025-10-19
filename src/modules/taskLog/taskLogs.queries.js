@@ -2,6 +2,8 @@ require("dotenv").config();
 const { ObjectId } = require("mongodb");
 const connectDB = require("../../config/db");
 const timeLineQueries = require("../timeline/timeline.queries");
+const notificationControll = require("../notificationControll/notificationControll.queries");
+const notification = require("../notification/notification.queries");
 
 const createTaskLog = async (data) => {
   const {
@@ -283,10 +285,7 @@ const updateTaskStatus = async (id, body) => {
 
   const db = await connectDB();
 
-  // Calculate total duration (in milliseconds)
   const totalDurationMs = new Date(endTime) - new Date(startTime);
-
-  // Convert to hours/minutes/seconds if needed
   const totalDuration = {
     milliseconds: totalDurationMs,
     seconds: Math.floor(totalDurationMs / 1000),
@@ -294,29 +293,19 @@ const updateTaskStatus = async (id, body) => {
     hours: Math.floor(totalDurationMs / (1000 * 60 * 60)),
   };
 
-  console.log(id, "task id");
-  console.log(newStatus, "New Statush");
-
-  // 1️⃣ Update taskLogs
   const result = await db.collection("taskLogs").findOneAndUpdate(
     { taskId: id, isStateComplete: false, isActive: true, isDelete: false },
     {
       $set: {
         isStateComplete: true,
-        // endTime: endTime,
         totalDuration,
-        // taskStatus: newStatus,
         updatedAt: new Date(),
       },
     },
     { returnDocument: "after" }
   );
 
-  console.log(result.value, "REsult");
-
   const stat = newStatus.toLowerCase();
-
-  // 2️⃣ Update tasks with totalDuration and status
   if (result._id) {
     const updateTask = await db.collection("tasks").findOneAndUpdate(
       { _id: new ObjectId(id), isActive: true, isDelete: false },
@@ -329,7 +318,19 @@ const updateTaskStatus = async (id, body) => {
       { returnDocument: "after" }
     );
 
-    // console.log(updateTask, "Update Task");
+    const notifyCntrlFind = await db
+      .collection("notificationControl")
+      .findOne({ taskId: id, isActive: true, isDelete: false });
+
+    if (notifyCntrlFind && notifyCntrlFind.followers?.length > 0) {
+      for (const follower of notifyCntrlFind.followers) {
+        await notification.createNotification({
+          assignToId: follower.receiverId,
+          notificationType: "task_status_update",
+          message: `Task "${notifyCntrlFind.taskTitle}" status updated to "${newStatus}"`,
+        });
+      }
+    }
 
     return result;
   }
