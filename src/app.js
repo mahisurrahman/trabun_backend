@@ -10,6 +10,7 @@ const taskLogRoutes = require("./modules/taskLog/taskLogs.routes");
 const responseMiddleware = require("./middlewares/responseMiddleware");
 const timeLineRoutes = require("./modules/timeline/timeline.routes");
 const commentRoutes = require("./modules/comments/comments.routes");
+const notificationControll = require("./modules/notificationControll/notificationControll.routes");
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -29,5 +30,6 @@ app.use("/api/v1/task", taskRoutes);
 app.use("/api/v1/taskLog", taskLogRoutes);
 app.use("/api/v1/timeline", timeLineRoutes);
 app.use("/api/v1/comments", commentRoutes);
+app.use("/api/v1/notifyControll", notificationControll);
 
 module.exports = app;
