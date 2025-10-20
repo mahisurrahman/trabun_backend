@@ -16,6 +16,7 @@ const createComment = async (commentData) => {
     taskStatus,
     author,
     commentedOnTime,
+    taggedUsers = [], // Default to empty array if not provided
   } = commentData;
 
   const db = await connectDB();
@@ -28,6 +29,7 @@ const createComment = async (commentData) => {
     userId: new ObjectId(userId),
     taskStatus: taskStatus || null,
     commentedOnTime,
+    taggedUsers: taggedUsers.map((id) => new ObjectId(id)), // Convert tagged user IDs to ObjectId
     isActive: true,
     isDelete: false,
     createdAt: new Date(),
@@ -35,77 +37,6 @@ const createComment = async (commentData) => {
   };
 
   const response = await db.collection("comments").insertOne(newComment);
-
-  const notificationControl = await db
-    .collection("notificationControl")
-    .findOne({ taskId: taskId, isActive: true, isDelete: false });
-
-  if (!notificationControl) {
-    console.warn("No notification control found for this task.");
-    return {
-      ...newComment,
-      _id: response.insertedId,
-    };
-  }
-
-  let followers = notificationControl.followers || [];
-
-  const existingFollowerIndex = followers.findIndex(
-    (f) => f.receiverId.toString() === userId.toString()
-  );
-
-  if (existingFollowerIndex === -1) {
-    followers.push({
-      receiverId: new ObjectId(userId),
-      controlType: [1, 2, 3],
-    });
-  } else {
-    const existing = followers[existingFollowerIndex];
-    const mergedTypes = Array.from(new Set([...existing.controlType, 1, 2, 3]));
-    followers[existingFollowerIndex].controlType = mergedTypes;
-  }
-
-  const uniqueMap = new Map();
-  followers.forEach((f) => {
-    const id = f.receiverId.toString();
-    if (uniqueMap.has(id)) {
-      const existing = uniqueMap.get(id);
-      const mergedTypes = Array.from(
-        new Set([...existing.controlType, ...f.controlType])
-      );
-      uniqueMap.set(id, { receiverId: f.receiverId, controlType: mergedTypes });
-    } else {
-      uniqueMap.set(id, f);
-    }
-  });
-
-  followers = Array.from(uniqueMap.values());
-
-  await db.collection("notificationControl").updateOne(
-    { _id: notificationControl._id },
-    {
-      $set: {
-        followers,
-        updatedAt: new Date(),
-      },
-    }
-  );
-
-  const filteredFollowers = followers.filter(
-    (f) => f.receiverId.toString() !== userId.toString()
-  );
-
-  await Promise.all(
-    filteredFollowers.map((follower) =>
-      notification.createNotification({
-        notificationControllerId: notificationControl._id,
-        assignToId: follower.receiverId,
-        notificationType: 2, // e.g. comment notification
-        message: `New comment on task: ${notificationControl.taskTitle}`,
-      })
-    )
-  );
-
   return {
     ...newComment,
     _id: response.insertedId,
