@@ -4,6 +4,10 @@ const notificationController = require("./notification.controller");
 
 router.post("/create", notificationController.createNotification);
 router.get("/all", notificationController.getAllNotifications);
+router.post(
+  "/getByTask",
+  notificationController.getNotificationByTaskIdAndUserId
+);
 router.get("/byId/:id", notificationController.getNotificationById);
 router.post("/update/:id", notificationController.updateNotification);
 router.get("/remove/:id", notificationController.removeNotification);

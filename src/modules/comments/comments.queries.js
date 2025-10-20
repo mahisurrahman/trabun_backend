@@ -108,21 +108,20 @@ const createComment = async (commentData) => {
       }
     );
 
-    // const followersToNotify = followers.filter(
-    //   (f) => f.receiverId.toString() !== commenterIdStr
-    // );
+    const followersToNotify = followers.filter(
+      (f) => f.receiverId.toString() !== commenterIdStr
+    );
 
-    // await Promise.all(
-    //   followersToNotify.map((follower) =>
-    //     notificationQueries.createNotification({
-    //       taskId, // Pass the original taskId (string)
-    //       assignToId: follower.receiverId,
-    //       taskTitle: notificationControl.taskTitle,
-    //       notificationType: 2, // Comment notification type
-    //       message: `New comment on task: ${notificationControl.taskTitle}`,
-    //     })
-    //   )
-    // );
+    await Promise.all(
+      followersToNotify.map((follower) =>
+        notification.createNotification({
+          taskId,
+          assignToId: follower.receiverId,
+          notificationType: 2,
+          message: `New comment on task: ${notificationControl.taskTitle}`,
+        })
+      )
+    );
   } else {
     console.warn("No notification control found for taskId:", taskId);
   }

@@ -7,10 +7,10 @@ const connectDB = require("../../config/db");
 // =============================
 const createNotification = async (data) => {
   const db = await connectDB();
-  const { notificationControllerId, assignToId, notificationType, message } =
-    data;
+  const { taskId, assignToId, notificationType, message } = data;
 
   const notification = {
+    taskId,
     receiverId: assignToId,
     notificationType,
     message,
@@ -125,6 +125,25 @@ const deleteNotification = async (id) => {
     : { success: false, message: "Notification not found" };
 };
 
+// ==========================================================
+// ✅ GET Notifications TASK BY ID And Receiver ID
+// ==========================================================
+const getNotificationByTaskIdAndUserId = async (taskId, userId) => {
+  console.log(taskId, "TAsk Id");
+  console.log(userId, "User Id");
+  const db = await connectDB();
+  const notification = await db.collection("notifications").findOne({
+    taskId: taskId,
+    notificationType: 1,
+    receiverId: userId,
+    isDeleted: false,
+    isActive: true,
+    isRead: false,
+  });
+  console.log(notification, "Notification check");
+  return notification;
+};
+
 module.exports = {
   createNotification,
   getAllNotifications,
@@ -132,4 +151,5 @@ module.exports = {
   updateNotification,
   removeNotification,
   deleteNotification,
+  getNotificationByTaskIdAndUserId,
 };

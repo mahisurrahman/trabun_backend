@@ -325,8 +325,9 @@ const updateTaskStatus = async (id, body) => {
     if (notifyCntrlFind && notifyCntrlFind.followers?.length > 0) {
       for (const follower of notifyCntrlFind.followers) {
         await notification.createNotification({
+          taskId: id,
           assignToId: follower.receiverId,
-          notificationType: "task_status_update",
+          notificationType: 1,
           message: `Task "${notifyCntrlFind.taskTitle}" status updated to "${newStatus}"`,
         });
       }

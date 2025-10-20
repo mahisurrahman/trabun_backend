@@ -51,6 +51,26 @@ const getNotificationById = async (req, res) => {
   }
 };
 
+// ✅ 3. Get Notification By ID
+const getNotificationByTaskIdAndUserId = async (req, res) => {
+  try {
+    const { taskId, userId } = req.body;
+    const response = await notificationService.getNotificationByTaskIdAndUserId(
+      taskId,
+      userId
+    );
+    res.status(response.status || 500).send(response);
+  } catch (error) {
+    console.error("Get Notification By ID Controller Failed:", error);
+    res.status(500).send({
+      error: true,
+      status: 500,
+      message: "Notification Fetch Controller Failed",
+      data: [],
+    });
+  }
+};
+
 // ✅ 4. Update Notification
 const updateNotification = async (req, res) => {
   try {
@@ -109,4 +129,5 @@ module.exports = {
   updateNotification,
   removeNotification,
   deleteNotification,
+  getNotificationByTaskIdAndUserId,
 };
