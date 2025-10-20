@@ -112,14 +112,10 @@ const getNotificationControllByTaskId = async (taskId) => {
 };
 
 // ✅ 5. Add or Update Follower (Dynamic Control Type)
-const addOrUpdateFollowerService = async (
-  notificationId,
-  receiverId,
-  controlTypes
-) => {
+const addOrUpdateFollowerService = async (taskId, receiverId, controlTypes) => {
   try {
     const response = await notificationControllQueries.addOrUpdateFollower(
-      notificationId,
+      taskId,
       receiverId,
       controlTypes
     );
@@ -142,14 +138,14 @@ const addOrUpdateFollowerService = async (
 
 // ✅ 6. Remove Control Type(s) from Follower
 const removeControlTypesFromFollowerService = async (
-  notificationId,
+  taskId,
   receiverId,
   controlTypes
 ) => {
   try {
     const response =
       await notificationControllQueries.removeControlTypesFromFollower(
-        notificationId,
+        taskId,
         receiverId,
         controlTypes
       );

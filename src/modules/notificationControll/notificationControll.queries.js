@@ -68,17 +68,13 @@ const getNotificationControlByTaskId = async (taskId) => {
 };
 
 // ✅ 4. Add or Update Follower (Dynamic Control Types)
-const addOrUpdateFollower = async (
-  notificationId,
-  receiverId,
-  controlTypes
-) => {
+const addOrUpdateFollower = async (taskId, receiverId, controlTypes) => {
   const Db = await connectDB();
 
   // Try to add control types if follower already exists
   const result = await Db.collection("notificationControl").updateOne(
     {
-      _id: new ObjectId(notificationId),
+      taskId: taskId,
       "followers.receiverId": receiverId,
     },
     {
@@ -103,18 +99,24 @@ const addOrUpdateFollower = async (
   return result;
 };
 
-// ✅ 5. Remove Control Type(s) from Follower
 const removeControlTypesFromFollower = async (
-  notificationId,
+  taskId,
   receiverId,
   controlTypes
 ) => {
   const Db = await connectDB();
 
+  const typesArray = Array.isArray(controlTypes)
+    ? controlTypes
+    : [controlTypes];
+
   const result = await Db.collection("notificationControl").updateOne(
-    { _id: new ObjectId(notificationId), "followers.receiverId": receiverId },
     {
-      $pull: { "followers.$.controlType": { $in: controlTypes } },
+      taskId: taskId,
+      "followers.receiverId": receiverId,
+    },
+    {
+      $pull: { "followers.$.controlType": { $in: typesArray } },
       $set: { updatedAt: new Date() },
     }
   );

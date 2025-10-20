@@ -16,7 +16,7 @@ const createComment = async (commentData) => {
     taskStatus,
     author,
     commentedOnTime,
-    taggedUsers = [], // Default to empty array if not provided
+    taggedUsers = [],
   } = commentData;
 
   const db = await connectDB();
@@ -29,7 +29,7 @@ const createComment = async (commentData) => {
     userId: new ObjectId(userId),
     taskStatus: taskStatus || null,
     commentedOnTime,
-    taggedUsers: taggedUsers.map((id) => new ObjectId(id)), // Convert tagged user IDs to ObjectId
+    taggedUsers: taggedUsers.map((id) => new ObjectId(id)),
     isActive: true,
     isDelete: false,
     createdAt: new Date(),
@@ -37,6 +37,96 @@ const createComment = async (commentData) => {
   };
 
   const response = await db.collection("comments").insertOne(newComment);
+
+  const notificationControl = await db
+    .collection("notificationControl")
+    .findOne({ taskId: taskId, isActive: true, isDelete: false });
+
+  if (notificationControl) {
+    let followers = notificationControl.followers || [];
+
+    const commenterIdObj = new ObjectId(userId);
+    const commenterIdStr = commenterIdObj.toString();
+    const existingCommenterIndex = followers.findIndex(
+      (f) => f.receiverId.toString() === commenterIdStr
+    );
+
+    if (existingCommenterIndex === -1) {
+      followers.push({
+        receiverId: commenterIdObj,
+        controlType: [1, 2, 3],
+      });
+    } else {
+      const existing = followers[existingCommenterIndex];
+      const mergedTypes = Array.from(
+        new Set([...existing.controlType, 1, 2, 3])
+      );
+      followers[existingCommenterIndex].controlType = mergedTypes;
+    }
+
+    taggedUsers.forEach((taggedId) => {
+      const taggedIdObj = new ObjectId(taggedId);
+      const taggedIdStr = taggedIdObj.toString();
+
+      const existingTaggedIndex = followers.findIndex(
+        (f) => f.receiverId.toString() === taggedIdStr
+      );
+
+      if (existingTaggedIndex === -1) {
+        followers.push({
+          receiverId: taggedIdStr,
+          controlType: [1, 2, 3],
+        });
+      }
+    });
+
+    const uniqueFollowersMap = new Map();
+    followers.forEach((f) => {
+      const idStr = f.receiverId.toString();
+      if (uniqueFollowersMap.has(idStr)) {
+        const existing = uniqueFollowersMap.get(idStr);
+        const mergedTypes = Array.from(
+          new Set([...existing.controlType, ...f.controlType])
+        );
+        uniqueFollowersMap.set(idStr, {
+          receiverId: f.receiverId,
+          controlType: mergedTypes,
+        });
+      } else {
+        uniqueFollowersMap.set(idStr, f);
+      }
+    });
+    followers = Array.from(uniqueFollowersMap.values());
+
+    await db.collection("notificationControl").updateOne(
+      { _id: notificationControl._id },
+      {
+        $set: {
+          followers,
+          updatedAt: new Date(),
+        },
+      }
+    );
+
+    // const followersToNotify = followers.filter(
+    //   (f) => f.receiverId.toString() !== commenterIdStr
+    // );
+
+    // await Promise.all(
+    //   followersToNotify.map((follower) =>
+    //     notificationQueries.createNotification({
+    //       taskId, // Pass the original taskId (string)
+    //       assignToId: follower.receiverId,
+    //       taskTitle: notificationControl.taskTitle,
+    //       notificationType: 2, // Comment notification type
+    //       message: `New comment on task: ${notificationControl.taskTitle}`,
+    //     })
+    //   )
+    // );
+  } else {
+    console.warn("No notification control found for taskId:", taskId);
+  }
+
   return {
     ...newComment,
     _id: response.insertedId,
