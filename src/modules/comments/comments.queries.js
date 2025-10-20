@@ -2,6 +2,7 @@ require("dotenv").config();
 const { ObjectId } = require("mongodb");
 const connectDB = require("../../config/db");
 const notificationController = require("../notificationControll/notificationControll.queries");
+const notification = require("../notification/notification.queries");
 
 // ======================
 // 🟢 Create Comment
@@ -37,7 +38,7 @@ const createComment = async (commentData) => {
 
   const notificationControl = await db
     .collection("notificationControl")
-    .findOne({ taskId: new ObjectId(taskId), isActive: true, isDelete: false });
+    .findOne({ taskId: taskId, isActive: true, isDelete: false });
 
   if (!notificationControl) {
     console.warn("No notification control found for this task.");
@@ -96,7 +97,7 @@ const createComment = async (commentData) => {
 
   await Promise.all(
     filteredFollowers.map((follower) =>
-      notificationQueries.createNotification({
+      notification.createNotification({
         notificationControllerId: notificationControl._id,
         assignToId: follower.receiverId,
         notificationType: 2, // e.g. comment notification
