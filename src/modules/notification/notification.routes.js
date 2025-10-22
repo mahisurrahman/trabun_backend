@@ -8,6 +8,7 @@ router.post(
   "/getByTask",
   notificationController.getNotificationByTaskIdAndUserId
 );
+router.post("/read/byTask", notificationController.readNotificationByTaskIdAndUserId);
 router.get("/byId/:id", notificationController.getNotificationById);
 router.post("/update/:id", notificationController.updateNotification);
 router.get("/remove/:id", notificationController.removeNotification);

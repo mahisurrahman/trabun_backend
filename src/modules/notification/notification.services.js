@@ -114,6 +114,39 @@ const getNotificationByTaskIdAndUserId = async (taskId, userId) => {
   }
 };
 
+// ✅ 3. Get Notification By ID
+const readNotificationByTaskIdAndUserId = async (taskId, userId) => {
+  try {
+    const response = await notificationQueries.readByTaskIdAndUserId(
+      taskId,
+      userId
+    );
+    if (response) {
+      return {
+        status: 200,
+        error: false,
+        message: "Notification Found",
+        data: response,
+      };
+    } else {
+      return {
+        status: 404,
+        error: true,
+        message: "Notification Not Found",
+        data: null,
+      };
+    }
+  } catch (error) {
+    console.error(error, "Get Notification By ID Error");
+    return {
+      status: 500,
+      error: true,
+      message: "Notification Fetch Service Failed",
+      data: null,
+    };
+  }
+};
+
 // ✅ 4. Update Notification
 const updateNotification = async (id, updateData) => {
   try {
@@ -215,4 +248,5 @@ module.exports = {
   removeNotification,
   deleteNotification,
   getNotificationByTaskIdAndUserId,
+  readNotificationByTaskIdAndUserId,
 };

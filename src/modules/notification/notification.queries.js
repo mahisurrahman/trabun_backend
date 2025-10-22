@@ -129,20 +129,44 @@ const deleteNotification = async (id) => {
 // ✅ GET Notifications TASK BY ID And Receiver ID
 // ==========================================================
 const getNotificationByTaskIdAndUserId = async (taskId, userId) => {
-  console.log(taskId, "TAsk Id");
-  console.log(userId, "User Id");
   const db = await connectDB();
-  const notification = await db.collection("notifications").findOne({
+  const notifications = await db.collection("notifications").find({
     taskId: taskId,
     notificationType: 1,
     receiverId: userId,
     isDeleted: false,
     isActive: true,
     isRead: false,
-  });
-  console.log(notification, "Notification check");
-  return notification;
+  }).toArray(); 
+
+  return notifications;
 };
+
+
+// ==========================================================
+// ✅ Ready Notifications TASK BY ID And Receiver ID
+// ==========================================================
+const readByTaskIdAndUserId = async (taskId, userId) => {
+  const db = await connectDB();
+
+  const result = await db.collection("notifications").updateMany(
+    {
+      taskId: taskId,
+      notificationType: 1,
+      receiverId: userId,
+      isDeleted: false,
+      isActive: true,
+      isRead: false, 
+    },
+    {
+      $set: { isRead: true },
+    }
+  );
+
+  return result; 
+};
+
+
 
 module.exports = {
   createNotification,
@@ -152,4 +176,5 @@ module.exports = {
   removeNotification,
   deleteNotification,
   getNotificationByTaskIdAndUserId,
+  readByTaskIdAndUserId,
 };
