@@ -41,7 +41,7 @@ const createComment = async (commentData) => {
 
   const notificationControl = await db
     .collection("notificationControl")
-    .findOne({ taskId: taskId, isActive: true, isDelete: false });
+    .findOne({ taskId: newComment.taskId.toString(), isActive: true, isDelete: false });
 
   if (notificationControl) {
     let followers = notificationControl.followers || [];

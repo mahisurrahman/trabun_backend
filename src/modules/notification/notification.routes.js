@@ -13,6 +13,7 @@ router.post(
   notificationController.geCommentNotificationByTaskIdAndUserId
 );
 router.post("/read/byTask", notificationController.readNotificationByTaskIdAndUserId);
+router.post("/comment/read/byTask", notificationController.readCommentNotificationByTaskIdAndUserId);
 router.get("/byId/:id", notificationController.getNotificationById);
 router.post("/update/:id", notificationController.updateNotification);
 router.get("/remove/:id", notificationController.removeNotification);

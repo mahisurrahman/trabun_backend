@@ -110,6 +110,26 @@ const readNotificationByTaskIdAndUserId = async (req, res) => {
   }
 };
 
+const readCommentNotificationByTaskIdAndUserId = async (req, res) => {
+  try {
+    const { taskId, userId, commentId } = req.body;
+    const response = await notificationService.readCommentNotificationByTaskIdAndUserId(
+      taskId,
+      userId,
+      commentId,
+    );
+    res.status(response.status || 500).send(response);
+  } catch (error) {
+    console.error("Get Notification By ID Controller Failed:", error);
+    res.status(500).send({
+      error: true,
+      status: 500,
+      message: "Notification Fetch Controller Failed",
+      data: [],
+    });
+  }
+};
+
 // ✅ 4. Update Notification
 const updateNotification = async (req, res) => {
   try {
@@ -171,4 +191,5 @@ module.exports = {
   getNotificationByTaskIdAndUserId,
   readNotificationByTaskIdAndUserId,
   geCommentNotificationByTaskIdAndUserId,
+  readCommentNotificationByTaskIdAndUserId,
 };

@@ -154,8 +154,6 @@ const getCommentNotificationByTaskIdAndUserId = async (taskId, userId) => {
     isRead: false,
   }).toArray(); 
 
-  console.log(notifications, "notifications")
-
   return notifications;
 };
 
@@ -169,8 +167,30 @@ const readByTaskIdAndUserId = async (taskId, userId) => {
   const result = await db.collection("notifications").updateMany(
     {
       taskId: taskId,
-      notificationType: 1,
       receiverId: userId,
+      isDeleted: false,
+      isActive: true,
+      isRead: false, 
+    },
+    {
+      $set: { isRead: true },
+    }
+  );
+
+  return result; 
+};
+
+// ==========================================================
+// ✅ Ready Notifications TASK BY ID And Receiver ID
+// ==========================================================
+const readCommentByTaskIdAndUserId = async (taskId, userId, commentId) => {
+  const db = await connectDB();
+
+  const result = await db.collection("notifications").updateMany(
+    {
+      taskId: taskId,
+      receiverId: userId,
+      commentId: commentId,
       isDeleted: false,
       isActive: true,
       isRead: false, 
@@ -195,4 +215,5 @@ module.exports = {
   getNotificationByTaskIdAndUserId,
   readByTaskIdAndUserId,
   getCommentNotificationByTaskIdAndUserId,
+  readCommentByTaskIdAndUserId,
 };
