@@ -7,12 +7,13 @@ const connectDB = require("../../config/db");
 // =============================
 const createNotification = async (data) => {
   const db = await connectDB();
-  const { taskId, assignToId, notificationType, message } = data;
+  const { taskId, assignToId, notificationType, commentId, message } = data;
 
   const notification = {
     taskId,
     receiverId: assignToId,
     notificationType,
+    commentId,
     message,
     isRead: false,
     isActive: true,
@@ -142,6 +143,22 @@ const getNotificationByTaskIdAndUserId = async (taskId, userId) => {
   return notifications;
 };
 
+const getCommentNotificationByTaskIdAndUserId = async (taskId, userId) => {
+  const db = await connectDB();
+  const notifications = await db.collection("notifications").find({
+    taskId: taskId,
+    notificationType: 2,
+    receiverId: userId,
+    isDeleted: false,
+    isActive: true,
+    isRead: false,
+  }).toArray(); 
+
+  console.log(notifications, "notifications")
+
+  return notifications;
+};
+
 
 // ==========================================================
 // ✅ Ready Notifications TASK BY ID And Receiver ID
@@ -177,4 +194,5 @@ module.exports = {
   deleteNotification,
   getNotificationByTaskIdAndUserId,
   readByTaskIdAndUserId,
+  getCommentNotificationByTaskIdAndUserId,
 };

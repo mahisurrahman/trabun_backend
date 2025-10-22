@@ -8,6 +8,10 @@ router.post(
   "/getByTask",
   notificationController.getNotificationByTaskIdAndUserId
 );
+router.post(
+  "/comment/getByTaskIdAndUserId",
+  notificationController.geCommentNotificationByTaskIdAndUserId
+);
 router.post("/read/byTask", notificationController.readNotificationByTaskIdAndUserId);
 router.get("/byId/:id", notificationController.getNotificationById);
 router.post("/update/:id", notificationController.updateNotification);

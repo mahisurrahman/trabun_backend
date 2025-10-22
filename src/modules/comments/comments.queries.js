@@ -38,6 +38,7 @@ const createComment = async (commentData) => {
 
   const response = await db.collection("comments").insertOne(newComment);
 
+
   const notificationControl = await db
     .collection("notificationControl")
     .findOne({ taskId: taskId, isActive: true, isDelete: false });
@@ -113,10 +114,11 @@ const createComment = async (commentData) => {
     );
 
     await Promise.all(
-      followersToNotify.map((follower) =>
+      followers.map((follower) =>
         notification.createNotification({
           taskId,
           assignToId: follower.receiverId,
+          commentId: response.insertedId.toString(),
           notificationType: 2,
           message: `New comment on task: ${notificationControl.taskTitle}`,
         })
