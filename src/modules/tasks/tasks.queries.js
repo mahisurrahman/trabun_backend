@@ -58,6 +58,97 @@ const taskUpdate = async (taskId, updateData) => {
   return response;
 };
 
+const totalTask = async (userId) => {
+  const db = await connectDB();
+
+  const response = await db
+    .collection("tasks")
+    .find({ taskAssignedTo: userId, isDelete: false, isActive: true })
+    .toArray();
+
+  return response;
+};
+
+const totalCompletedTask = async (userId) => {
+  const db = await connectDB();
+
+  const response = await db
+    .collection("tasks")
+    .find({
+      taskAssignedTo: userId,
+      taskStatus: "completed",
+      isDelete: false,
+      isActive: true,
+    })
+    .toArray();
+
+  return response;
+};
+
+const totalOngoingTask = async (userId) => {
+  const db = await connectDB();
+
+  const response = await db
+    .collection("tasks")
+    .find({
+      taskAssignedTo: userId,
+      taskStatus: "ongoing",
+      isDelete: false,
+      isActive: true,
+    })
+    .toArray();
+
+  return response;
+};
+
+const totalPendingTask = async (userId) => {
+  const db = await connectDB();
+
+  const response = await db
+    .collection("tasks")
+    .find({
+      taskAssignedTo: userId,
+      taskStatus: "pending",
+      isDelete: false,
+      isActive: true,
+    })
+    .toArray();
+
+  return response;
+};
+
+const totalInQueTask = async (userId) => {
+  const db = await connectDB();
+
+  const response = await db
+    .collection("tasks")
+    .find({
+      taskAssignedTo: userId,
+      taskStatus: "inqueue",
+      isDelete: false,
+      isActive: true,
+    })
+    .toArray();
+
+  return response;
+};
+
+const totalReviewTask = async (userId) => {
+  const db = await connectDB();
+
+  const response = await db
+    .collection("tasks")
+    .find({
+      taskAssignedTo: userId,
+      taskStatus: "review",
+      isDelete: false,
+      isActive: true,
+    })
+    .toArray();
+
+  return response;
+};
+
 const softRemoveTask = async (taskId) => {
   const db = await connectDB();
   const response = await db
@@ -187,4 +278,10 @@ module.exports = {
   getTasksByStatus,
   getTaskByBacklog,
   changeTaskStatusById,
+  totalTask,
+  totalCompletedTask,
+  totalOngoingTask,
+  totalPendingTask,
+  totalInQueTask,
+  totalReviewTask,
 };

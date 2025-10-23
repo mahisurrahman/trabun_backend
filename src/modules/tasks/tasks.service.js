@@ -254,6 +254,126 @@ const getTaskByBacklog = async () => {
   }
 };
 
+const getTotalTask = async (userId) => {
+  try {
+    const response = await taskQuery.totalTask(userId);
+    return {
+      status: 200,
+      error: false,
+      message: " Tasks Retrieved Successfully",
+      data: response,
+    };
+  } catch (error) {
+    console.log("Get  Tasks by Status Service - Internal Server Error", error);
+    return {
+      status: 500,
+      error: true,
+      message: "Get  Tasks by Status Service - Internal Server Error",
+      data: null,
+    };
+  }
+};
+
+const getTotalCompletedTask = async (userId) => {
+  try {
+    const response = await taskQuery.totalCompletedTask(userId);
+    return {
+      status: 200,
+      error: false,
+      message: " Tasks Retrieved Successfully",
+      data: response,
+    };
+  } catch (error) {
+    console.log("Get  Tasks by Status Service - Internal Server Error", error);
+    return {
+      status: 500,
+      error: true,
+      message: "Get  Tasks by Status Service - Internal Server Error",
+      data: null,
+    };
+  }
+};
+
+const getTotalOnGoingTask = async (userId) => {
+  try {
+    const response = await taskQuery.totalOngoingTask(userId);
+    return {
+      status: 200,
+      error: false,
+      message: " Tasks Retrieved Successfully",
+      data: response,
+    };
+  } catch (error) {
+    console.log("Get  Tasks by Status Service - Internal Server Error", error);
+    return {
+      status: 500,
+      error: true,
+      message: "Get  Tasks by Status Service - Internal Server Error",
+      data: null,
+    };
+  }
+};
+
+const getTotalPendingTask = async (userId) => {
+  try {
+    const response = await taskQuery.totalPendingTask(userId);
+    return {
+      status: 200,
+      error: false,
+      message: " Tasks Retrieved Successfully",
+      data: response,
+    };
+  } catch (error) {
+    console.log("Get  Tasks by Status Service - Internal Server Error", error);
+    return {
+      status: 500,
+      error: true,
+      message: "Get  Tasks by Status Service - Internal Server Error",
+      data: null,
+    };
+  }
+};
+
+const getTotalInQueTask = async (userId) => {
+  try {
+    const response = await taskQuery.totalInQueTask(userId);
+    return {
+      status: 200,
+      error: false,
+      message: " Tasks Retrieved Successfully",
+      data: response,
+    };
+  } catch (error) {
+    console.log("Get  Tasks by Status Service - Internal Server Error", error);
+    return {
+      status: 500,
+      error: true,
+      message: "Get  Tasks by Status Service - Internal Server Error",
+      data: null,
+    };
+  }
+};
+
+const getTotalReviewTask = async (userId) => {
+  try {
+    const response = await taskQuery.totalReviewTask(userId);
+    return {
+      status: 200,
+      error: false,
+      message: " Tasks Retrieved Successfully",
+      data: response,
+    };
+  } catch (error) {
+    console.log("Get  Tasks by Status Service - Internal Server Error", error);
+    return {
+      status: 500,
+      error: true,
+      message: "Get  Tasks by Status Service - Internal Server Error",
+      data: null,
+    };
+  }
+};
+
 // ✅ Change Task Status by ID
 const changeTaskStatusById = async (taskId, newStatus) => {
   try {
@@ -326,4 +446,10 @@ module.exports = {
   getTaskByBacklog,
   changeTaskStatusById,
   updateTaskById,
+  getTotalTask,
+  getTotalCompletedTask,
+  getTotalOnGoingTask,
+  getTotalPendingTask,
+  getTotalInQueTask,
+  getTotalReviewTask,
 };

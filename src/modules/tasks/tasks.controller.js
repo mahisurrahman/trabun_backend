@@ -135,6 +135,90 @@ const getTasksByStatus = async (req, res) => {
   }
 };
 
+const getTotalTasks = async (req, res) => {
+  try {
+    const response = await taskServices.getTotalTask(req.params.id);
+    res.send(response);
+  } catch (error) {
+    res.send({
+      error: true,
+      status: 500,
+      message: "Get Tasks by user id - Internal Server Error",
+      data: [],
+    });
+  }
+};
+
+const getTotalCompletedTasks = async (req, res) => {
+  try {
+    const response = await taskServices.getTotalCompletedTask(req.params.id);
+    res.send(response);
+  } catch (error) {
+    res.send({
+      error: true,
+      status: 500,
+      message: "Get Tasks by user id - Internal Server Error",
+      data: [],
+    });
+  }
+};
+
+const getTotalOnGoingTasks = async (req, res) => {
+  try {
+    const response = await taskServices.getTotalOnGoingTask(req.params.id);
+    res.send(response);
+  } catch (error) {
+    res.send({
+      error: true,
+      status: 500,
+      message: "Get Tasks by user id - Internal Server Error",
+      data: [],
+    });
+  }
+};
+
+const getTotalPendingTasks = async (req, res) => {
+  try {
+    const response = await taskServices.getTotalPendingTask(req.params.id);
+    res.send(response);
+  } catch (error) {
+    res.send({
+      error: true,
+      status: 500,
+      message: "Get Tasks by user id - Internal Server Error",
+      data: [],
+    });
+  }
+};
+
+const getTotalInQueTasks = async (req, res) => {
+  try {
+    const response = await taskServices.getTotalInQueTask(req.params.id);
+    res.send(response);
+  } catch (error) {
+    res.send({
+      error: true,
+      status: 500,
+      message: "Get Tasks by user id - Internal Server Error",
+      data: [],
+    });
+  }
+};
+
+const getTotalReviewTasks = async (req, res) => {
+  try {
+    const response = await taskServices.getTotalReviewTask(req.params.id);
+    res.send(response);
+  } catch (error) {
+    res.send({
+      error: true,
+      status: 500,
+      message: "Get Tasks by user id - Internal Server Error",
+      data: [],
+    });
+  }
+};
+
 const getTasksByBacklog = async (req, res) => {
   try {
     const response = await taskServices.getTaskByBacklog();
@@ -197,4 +281,10 @@ module.exports = {
   getTasksByBacklog,
   changeTaskStatusById,
   updateTaskById,
+  getTotalTasks,
+  getTotalCompletedTasks,
+  getTotalOnGoingTasks,
+  getTotalPendingTasks,
+  getTotalInQueTasks,
+  getTotalReviewTasks,
 };

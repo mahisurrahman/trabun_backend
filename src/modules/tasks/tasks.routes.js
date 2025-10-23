@@ -14,5 +14,11 @@ router.get("/get/creator/:id", taskController.getTasksByCreatorId);
 router.get("/get/by/status", taskController.getTasksByStatus);
 router.get("/get/by/backlog", taskController.getTasksByBacklog);
 router.post("/upt/:id", taskController.updateTaskById);
+router.get("/total/task/:id", taskController.getTotalTasks);
+router.get("/total/completed/:id", taskController.getTotalCompletedTasks);
+router.get("/total/ongoing/:id", taskController.getTotalOnGoingTasks);
+router.get("/total/pending/:id", taskController.getTotalPendingTasks);
+router.get("/total/inque/:id", taskController.getTotalInQueTasks);
+router.get("/total/review/:id", taskController.getTotalReviewTasks);
 
 module.exports = router;
