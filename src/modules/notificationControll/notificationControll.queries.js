@@ -67,6 +67,8 @@ const getNotificationControlByTaskId = async (taskId) => {
   return await Db.collection("notificationControl").findOne({ taskId });
 };
 
+//HAndling deploy//
+
 // ✅ 4. Add or Update Follower (Dynamic Control Types)
 const addOrUpdateFollower = async (taskId, receiverId, controlTypes) => {
   const Db = await connectDB();
