@@ -15,6 +15,7 @@ const createTask = async (data) => {
     taskCreatedBy,
     taskAssignedBy,
     assignedDate,
+    labels = [], // Add labels with default empty array
   } = data;
 
   const db = await connectDB();
@@ -30,6 +31,7 @@ const createTask = async (data) => {
     taskCreatedBy,
     taskAssignedBy,
     taskStatus: "pending",
+    labels, // Include labels array in task document
     createAt: new Date(),
     updateAt: null,
     isActive: true,

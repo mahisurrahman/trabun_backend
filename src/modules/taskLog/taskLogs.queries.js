@@ -98,6 +98,7 @@ const getTaskLogsWithFilters = async (startDate, endDate) => {
       taskAssignedBy: 1,
       taskCreatedBy: 1,
       backlog: 1,
+      labels: 1,
       expectedDeadline: 1,
       assignedDate: 1,
     })
@@ -154,6 +155,7 @@ const getTaskLogsWithFilters = async (startDate, endDate) => {
         backlog: task.backlog,
         expectedDeadline: task.expectedDeadline,
         assignedDate: task.assignedDate,
+        labels: task.labels,
       },
     };
   });
