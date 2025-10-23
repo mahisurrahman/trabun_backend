@@ -34,6 +34,24 @@ const getAllNotifications = async (req, res) => {
   }
 };
 
+// ✅ 2. Get All Notifications
+const getAllNotificationsByUserID = async (req, res) => {
+  try {
+    const response = await notificationService.getAllNotificationsByUserId(
+      req.params.id
+    );
+    res.status(response.status || 500).send(response);
+  } catch (error) {
+    console.error("Get All Notifications Controller Failed:", error);
+    res.status(500).send({
+      error: true,
+      status: 500,
+      message: "Notification Fetch Controller Failed",
+      data: [],
+    });
+  }
+};
+
 // ✅ 3. Get Notification By ID
 const getNotificationById = async (req, res) => {
   try {
@@ -74,10 +92,11 @@ const getNotificationByTaskIdAndUserId = async (req, res) => {
 const geCommentNotificationByTaskIdAndUserId = async (req, res) => {
   try {
     const { taskId, userId } = req.body;
-    const response = await notificationService.getCommentNotificationByTaskIdAndUserId(
-      taskId,
-      userId
-    );
+    const response =
+      await notificationService.getCommentNotificationByTaskIdAndUserId(
+        taskId,
+        userId
+      );
     res.status(response.status || 500).send(response);
   } catch (error) {
     console.error("Get Notification By ID Controller Failed:", error);
@@ -94,10 +113,11 @@ const geCommentNotificationByTaskIdAndUserId = async (req, res) => {
 const readNotificationByTaskIdAndUserId = async (req, res) => {
   try {
     const { taskId, userId } = req.body;
-    const response = await notificationService.readNotificationByTaskIdAndUserId(
-      taskId,
-      userId
-    );
+    const response =
+      await notificationService.readNotificationByTaskIdAndUserId(
+        taskId,
+        userId
+      );
     res.status(response.status || 500).send(response);
   } catch (error) {
     console.error("Get Notification By ID Controller Failed:", error);
@@ -113,11 +133,12 @@ const readNotificationByTaskIdAndUserId = async (req, res) => {
 const readCommentNotificationByTaskIdAndUserId = async (req, res) => {
   try {
     const { taskId, userId, commentId } = req.body;
-    const response = await notificationService.readCommentNotificationByTaskIdAndUserId(
-      taskId,
-      userId,
-      commentId,
-    );
+    const response =
+      await notificationService.readCommentNotificationByTaskIdAndUserId(
+        taskId,
+        userId,
+        commentId
+      );
     res.status(response.status || 500).send(response);
   } catch (error) {
     console.error("Get Notification By ID Controller Failed:", error);
@@ -192,4 +213,5 @@ module.exports = {
   readNotificationByTaskIdAndUserId,
   geCommentNotificationByTaskIdAndUserId,
   readCommentNotificationByTaskIdAndUserId,
+  getAllNotificationsByUserID,
 };

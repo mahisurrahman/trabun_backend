@@ -53,6 +53,19 @@ const getAllNotifications = async (filter = {}) => {
 };
 
 // =============================
+// ✅ GET ALL NOTIFICATIONS
+// =============================
+const getAllNotificationsByUserId = async (id) => {
+  const db = await connectDB();
+  const notifications = await db
+    .collection("notifications")
+    .find({ receiverId: id, isDeleted: false, isActive: true, isRead: false })
+    .sort({ createdAt: -1 })
+    .toArray();
+  return notifications;
+};
+
+// =============================
 // ✅ GET SINGLE NOTIFICATION
 // =============================
 const getNotificationById = async (id) => {
@@ -131,32 +144,37 @@ const deleteNotification = async (id) => {
 // ==========================================================
 const getNotificationByTaskIdAndUserId = async (taskId, userId) => {
   const db = await connectDB();
-  const notifications = await db.collection("notifications").find({
-    taskId: taskId,
-    notificationType: 1,
-    receiverId: userId,
-    isDeleted: false,
-    isActive: true,
-    isRead: false,
-  }).toArray(); 
+  const notifications = await db
+    .collection("notifications")
+    .find({
+      taskId: taskId,
+      notificationType: 1,
+      receiverId: userId,
+      isDeleted: false,
+      isActive: true,
+      isRead: false,
+    })
+    .toArray();
 
   return notifications;
 };
 
 const getCommentNotificationByTaskIdAndUserId = async (taskId, userId) => {
   const db = await connectDB();
-  const notifications = await db.collection("notifications").find({
-    taskId: taskId,
-    notificationType: 2,
-    receiverId: userId,
-    isDeleted: false,
-    isActive: true,
-    isRead: false,
-  }).toArray(); 
+  const notifications = await db
+    .collection("notifications")
+    .find({
+      taskId: taskId,
+      notificationType: 2,
+      receiverId: userId,
+      isDeleted: false,
+      isActive: true,
+      isRead: false,
+    })
+    .toArray();
 
   return notifications;
 };
-
 
 // ==========================================================
 // ✅ Ready Notifications TASK BY ID And Receiver ID
@@ -170,14 +188,14 @@ const readByTaskIdAndUserId = async (taskId, userId) => {
       receiverId: userId,
       isDeleted: false,
       isActive: true,
-      isRead: false, 
+      isRead: false,
     },
     {
       $set: { isRead: true },
     }
   );
 
-  return result; 
+  return result;
 };
 
 // ==========================================================
@@ -193,17 +211,15 @@ const readCommentByTaskIdAndUserId = async (taskId, userId, commentId) => {
       commentId: commentId,
       isDeleted: false,
       isActive: true,
-      isRead: false, 
+      isRead: false,
     },
     {
       $set: { isRead: true },
     }
   );
 
-  return result; 
+  return result;
 };
-
-
 
 module.exports = {
   createNotification,
@@ -216,4 +232,5 @@ module.exports = {
   readByTaskIdAndUserId,
   getCommentNotificationByTaskIdAndUserId,
   readCommentByTaskIdAndUserId,
+  getAllNotificationsByUserId,
 };

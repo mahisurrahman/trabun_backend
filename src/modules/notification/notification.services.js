@@ -51,6 +51,27 @@ const getAllNotifications = async (filter = {}) => {
   }
 };
 
+// ✅ 2. Get All Notifications
+const getAllNotificationsByUserId = async (id) => {
+  try {
+    const response = await notificationQueries.getAllNotificationsByUserId(id);
+    return {
+      status: 200,
+      error: false,
+      message: "Notifications Fetched Successfully",
+      data: response,
+    };
+  } catch (error) {
+    console.error(error, "Get All Notifications Error");
+    return {
+      status: 500,
+      error: true,
+      message: "Notification Fetch Service Failed",
+      data: null,
+    };
+  }
+};
+
 // ✅ 3. Get Notification By ID
 const getNotificationById = async (id) => {
   try {
@@ -117,10 +138,11 @@ const getNotificationByTaskIdAndUserId = async (taskId, userId) => {
 // ✅ 3. Get Notification By ID
 const getCommentNotificationByTaskIdAndUserId = async (taskId, userId) => {
   try {
-    const response = await notificationQueries.getCommentNotificationByTaskIdAndUserId(
-      taskId,
-      userId
-    );
+    const response =
+      await notificationQueries.getCommentNotificationByTaskIdAndUserId(
+        taskId,
+        userId
+      );
     if (response) {
       return {
         status: 200,
@@ -146,7 +168,6 @@ const getCommentNotificationByTaskIdAndUserId = async (taskId, userId) => {
     };
   }
 };
-
 
 // ✅ 3. Get Notification By ID
 const readNotificationByTaskIdAndUserId = async (taskId, userId) => {
@@ -182,12 +203,16 @@ const readNotificationByTaskIdAndUserId = async (taskId, userId) => {
 };
 
 // ✅ 3. Get Notification By ID
-const readCommentNotificationByTaskIdAndUserId = async (taskId, userId, commentId) => {
+const readCommentNotificationByTaskIdAndUserId = async (
+  taskId,
+  userId,
+  commentId
+) => {
   try {
     const response = await notificationQueries.readCommentByTaskIdAndUserId(
       taskId,
       userId,
-      commentId,
+      commentId
     );
     if (response) {
       return {
@@ -319,4 +344,5 @@ module.exports = {
   readNotificationByTaskIdAndUserId,
   getCommentNotificationByTaskIdAndUserId,
   readCommentNotificationByTaskIdAndUserId,
+  getAllNotificationsByUserId,
 };
