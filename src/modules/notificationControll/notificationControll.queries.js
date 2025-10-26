@@ -64,7 +64,38 @@ const getNotificationControlById = async (id) => {
 // ✅ 3. Get by TaskId
 const getNotificationControlByTaskId = async (taskId) => {
   const Db = await connectDB();
-  return await Db.collection("notificationControl").findOne({ taskId });
+
+  const result = await Db.collection("notificationControl").findOne({ taskId });
+  if (!result) return null;
+
+  // Get all receiverIds from followers
+  const receiverIds =
+    result.followers?.map((f) => new ObjectId(f.receiverId)) || [];
+
+  // Fetch user data for all receiverIds
+  const users = await Db.collection("users")
+    .find({ _id: { $in: receiverIds } })
+    .toArray();
+
+  // Merge user data into followers (keeping receiverId)
+  const populatedFollowers = result.followers.map((follower) => {
+    const user = users.find(
+      (u) => u._id.toString() === follower.receiverId.toString()
+    );
+    return {
+      ...follower,
+      receiverData: user
+        ? {
+            ...user,
+          }
+        : null,
+    };
+  });
+
+  return {
+    ...result,
+    followers: populatedFollowers,
+  };
 };
 
 // ✅ 4. Add or Update Follower (Dynamic Control Types)
