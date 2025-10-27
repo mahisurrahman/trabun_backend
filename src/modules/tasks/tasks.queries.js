@@ -199,6 +199,15 @@ const softRemoveTask = async (taskId) => {
       { _id: new ObjectId(taskId) },
       { $set: { isActive: false, isDelete: true, updateAt: new Date() } }
     );
+
+  if (response.modifiedCount > 0) {
+    const responseTwo = await db
+      .collection("taskLogs")
+      .updateOne(
+        { taskId: taskId },
+        { $set: { isActive: false, isDelete: true, updateAt: new Date() } }
+      );
+  }
   return response;
 };
 
