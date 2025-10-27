@@ -46,18 +46,58 @@ const createTask = async (data) => {
 const taskUpdate = async (taskId, updateData) => {
   const db = await connectDB();
 
-  const response = await db.collection("tasks").findOneAndUpdate(
-    { _id: new ObjectId(taskId), isDelete: false, isActive: true },
-    {
-      $set: {
-        ...updateData,
-        updateAt: new Date(),
+  if (updateData.assignedToId) {
+    const response = await db.collection("tasks").findOneAndUpdate(
+      { _id: new ObjectId(taskId), isDelete: false, isActive: true },
+      {
+        $set: {
+          ...updateData,
+          taskAssignedTo: updateData.assignedToId,
+          backlog: false,
+          updateAt: new Date(),
+        },
       },
-    },
-    { returnDocument: "after" }
-  );
+      { returnDocument: "after" }
+    );
 
-  return response;
+    if (response) {
+      if (updateData.expectedDeadline) {
+        const responseTwo = await db.collection("taskLogs").findOneAndUpdate(
+          { taskId: taskId, isDelete: false, isActive: true },
+          {
+            $set: {
+              expectedDuration: updateData.expectedDeadline,
+              updateAt: new Date(),
+            },
+          },
+          { returnDocument: "after" }
+        );
+      }
+      const responseTwo = await db.collection("taskLogs").findOneAndUpdate(
+        { taskId: taskId, isDelete: false, isActive: true },
+        {
+          $set: {
+            assignedToId: updateData.assignedToId,
+            updateAt: new Date(),
+          },
+        },
+        { returnDocument: "after" }
+      );
+      return response;
+    }
+  } else {
+    const response = await db.collection("tasks").findOneAndUpdate(
+      { _id: new ObjectId(taskId), isDelete: false, isActive: true },
+      {
+        $set: {
+          ...updateData,
+          updateAt: new Date(),
+        },
+      },
+      { returnDocument: "after" }
+    );
+    return response;
+  }
 };
 
 const totalTask = async (userId) => {
