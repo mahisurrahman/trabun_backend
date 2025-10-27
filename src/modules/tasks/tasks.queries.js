@@ -200,6 +200,8 @@ const softRemoveTask = async (taskId) => {
       { $set: { isActive: false, isDelete: true, updateAt: new Date() } }
     );
 
+  // blank commit
+
   if (response.modifiedCount > 0) {
     const responseTwo = await db
       .collection("taskLogs")
