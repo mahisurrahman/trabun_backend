@@ -12,6 +12,8 @@ const createUser = async (userData) => {
   if (user) {
     return { error: true, data: null, errorMessage: "User already exists" };
   }
+
+  // Blank Commit
   const newUser = await db.collection("users").insertOne({
     username,
     email,
