@@ -42,12 +42,12 @@ const createUser = async (userData) => {
 };
 
 const loginUser = async (credentials) => {
-  const { email, password } = credentials;
+  const { username, password } = credentials;
   const db = await connectDB();
 
   const checkUserExist = await db
     .collection("users")
-    .findOne({ email: email, isActive: true, isDelete: false });
+    .findOne({ username: username, isActive: true, isDelete: false });
 
   if (checkUserExist === null) {
     return checkUserExist;
@@ -193,11 +193,11 @@ const deleteAllUser = async () => {
 };
 
 function generateAccessToken(user) {
-  return jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: "7d" });
+  return jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: "30d" });
 }
 
 function generateRefreshToken(user) {
-  return jwt.sign(user, process.env.REFRESH_TOKEN_SECRET, { expiresIn: "7d" });
+  return jwt.sign(user, process.env.REFRESH_TOKEN_SECRET, { expiresIn: "30d" });
 }
 
 module.exports = {
