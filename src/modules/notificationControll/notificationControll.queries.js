@@ -69,12 +69,13 @@ const getNotificationControlByTaskId = async (taskId) => {
   if (!result) return null;
 
   // Get all receiverIds from followers
-  const receiverIds =
-    result.followers?.map((f) => new ObjectId(f.receiverId)) || [];
+  const receiverIds = result.followers?.map((f) => f.receiverId) || [];
+
+  const objectIds = receiverIds.map((id) => new ObjectId(id));
 
   // Fetch user data for all receiverIds
   const users = await Db.collection("users")
-    .find({ _id: { $in: receiverIds } })
+    .find({ _id: { $in: objectIds } })
     .toArray();
 
   // Merge user data into followers (keeping receiverId)
