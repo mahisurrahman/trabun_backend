@@ -269,6 +269,41 @@ const getTaskLogByTaskId = async (id) => {
     .findOne({ taskId: id, isActive: true, isDelete: false });
 };
 
+const getTotalTaskHourByTaskId = async (id) => {
+  const db = await connectDB();
+
+  // Get all logs for the given task ID
+  const logs = await db
+    .collection("taskLogs")
+    .find({ taskId: id, taskStatus: "ongoing", isActive: true, isDelete: false })
+    .toArray();
+
+  if (!logs.length) return "00:00:00";
+
+  // Helper function to convert "HH:MM:SS" → total seconds
+  const toSeconds = (timeStr) => {
+    const [h, m, s] = timeStr.split(":").map(Number);
+    return h * 3600 + m * 60 + s;
+  };
+
+  // Helper function to convert total seconds → "HH:MM:SS"
+  const toHHMMSS = (totalSeconds) => {
+    const h = String(Math.floor(totalSeconds / 3600)).padStart(2, "0");
+    const m = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, "0");
+    const s = String(totalSeconds % 60).padStart(2, "0");
+    return `${h}:${m}:${s}`;
+  };
+
+  // Sum all totalOnGoingTime values
+  const totalSeconds = logs.reduce((acc, log) => {
+    const seconds = toSeconds(log.totalOnGoingTime || "00:00:00");
+    return acc + seconds;
+  }, 0);
+
+  return toHHMMSS(totalSeconds);
+};
+
+
 const updateTaskLog = async (id, updateData) => {
   const db = await connectDB();
   updateData.updatedAt = new Date();
@@ -606,4 +641,5 @@ module.exports = {
   pauseTask,
   resumeTaskLog,
   pauseTaskLog,
+  getTotalTaskHourByTaskId
 };

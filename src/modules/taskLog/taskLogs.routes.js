@@ -21,6 +21,7 @@ router.get("/resume/:id", taskLogController.taskLogResume);
 // Update
 router.put("/update/:id", taskLogController.updateTaskLog);
 router.post("/updateStatus/:id", taskLogController.updateTaskStatus);
+router.get("/totalHour/:id", taskLogController.getTaskHourByTaskId)
 
 // Pause / Resume / End
 // router.put("/pause/:id", taskLogController.taskLogPause);

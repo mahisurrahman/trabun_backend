@@ -251,6 +251,39 @@ const getTaskLogByTaskId = async (id) => {
   }
 };
 
+
+const getTotalTaskHour = async (id) => {
+  try {
+    const response = await taskLogQuery.getTotalTaskHourByTaskId(id);
+    if (response) {
+      return {
+        status: 200,
+        error: false,
+        message: "Task Hour (By TaskId)",
+        data: response,
+      };
+    } else {
+      return {
+        status: 404,
+        error: true,
+        message: "No Hour Found for TaskId",
+        data: null,
+      };
+    }
+  } catch (error) {
+    console.log(
+      "Get Task Hour By TaskId Service - Internal Server Error",
+      error
+    );
+    return {
+      status: 500,
+      error: true,
+      message: "Get Task Hour By TaskId Service - Internal Server Error",
+      data: null,
+    };
+  }
+};
+
 const updateTaskLog = async (id, updateData) => {
   try {
     const response = await taskLogQuery.updateTaskLog(id, updateData);
@@ -591,4 +624,5 @@ module.exports = {
   startTask,
   pauseTask,
   resumeTask,
+  getTotalTaskHour
 };

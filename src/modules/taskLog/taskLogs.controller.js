@@ -118,6 +118,20 @@ const getTaskLogByTaskId = async (req, res) => {
   }
 };
 
+const getTaskHourByTaskId = async (req, res) => {
+  try {
+    const response = await taskLogService.getTotalTaskHour(req.params.id);
+    res.send(response);
+  } catch (error) {
+    res.send({
+      error: true,
+      status: 500,
+      message: "Get Task Hour By TaskId Controller - Internal Server Error",
+      data: [],
+    });
+  }
+};
+
 const updateTaskLog = async (req, res) => {
   try {
     const response = await taskLogService.updateTaskLog(
@@ -298,4 +312,5 @@ module.exports = {
   taskLogStart,
   taskLogPause,
   taskLogResume,
+  getTaskHourByTaskId
 };
